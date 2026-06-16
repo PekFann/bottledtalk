@@ -11,6 +11,9 @@ A location-aware web app where authenticated users drop message bottles on a map
 ## Features
 
 - Required sign-in (email/password)
+- **Bottle caps** currency (100 starter) — all bottles cost caps to cast
+- **Bag** (10 slots) — save conversations manually or when they wash ashore
+- Map clustering when many bottles share the same spot
 - Map centered on your location with a 2km discovery circle
 - Drop bottles with title + first message at current GPS
 - Four bottle types with different lifetimes:
@@ -32,7 +35,9 @@ npm install
 ### 2. Create a Supabase project
 
 1. Go to [supabase.com](https://supabase.com) and create a project.
-2. In the SQL Editor, run the migration at [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql).
+2. In the SQL Editor, run migrations in order:
+   - [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql)
+   - [`supabase/migrations/003_caps_and_bag.sql`](supabase/migrations/003_caps_and_bag.sql) (bottle caps, bag, economy)
 3. Under **Authentication → Providers**, enable Email.
 4. Copy your project URL and anon key from **Settings → API**.
 

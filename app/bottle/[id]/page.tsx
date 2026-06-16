@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isExpired } from "@/lib/geo";
 import MessageThread from "@/components/bottles/MessageThread";
 import ExpiryCountdown from "@/components/bottles/ExpiryCountdown";
+import KeepInBagButton from "@/components/bag/KeepInBagButton";
 import type { Message } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +32,7 @@ export default async function BottlePage({
       title,
       expires_at,
       created_at,
-      bottle_type:bottle_types (id, slug, name, description, duration_hours, icon, marker_color),
+      bottle_type:bottle_types (id, slug, name, description, duration_hours, icon, marker_color, cap_cost),
       creator:profiles!bottles_creator_id_fkey (id, display_name, avatar_url, created_at)
     `
     )
@@ -55,11 +56,22 @@ export default async function BottlePage({
     .eq("bottle_id", id)
     .order("created_at", { ascending: true });
 
+  const { data: bagRow } = await supabase
+    .from("bag_items")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("source_bottle_id", id)
+    .maybeSingle();
+
   const expired = isExpired(bottle.expires_at);
   const bottleType = Array.isArray(bottle.bottle_type)
     ? bottle.bottle_type[0]
     : bottle.bottle_type;
   const creator = Array.isArray(bottle.creator) ? bottle.creator[0] : bottle.creator;
+
+  const participated =
+    bottle.creator_id === user.id ||
+    (messages ?? []).some((m) => m.author_id === user.id);
 
   const normalizedMessages: Message[] = (messages ?? []).map((m) => ({
     id: m.id,
@@ -71,36 +83,44 @@ export default async function BottlePage({
   }));
 
   return (
-    <div className="flex flex-col h-dvh bg-sky-50">
-      <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 shrink-0">
+    <div className="flex flex-col h-dvh game-map-bg">
+      <header className="flex items-center gap-3 border-b border-sky-800/30 game-panel px-4 py-3 shrink-0">
         <Link
           href="/map"
-          className="text-sky-600 hover:text-sky-800 text-sm font-medium"
+          className="text-sky-200 hover:text-white text-sm font-medium"
         >
           ← Map
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-slate-900 truncate">{bottle.title}</h1>
-          <p className="text-xs text-slate-500">
+          <h1 className="font-bold text-sky-50 truncate">{bottle.title}</h1>
+          <p className="text-xs text-sky-200/80">
             {bottleType?.icon} {bottleType?.name} · by {creator?.display_name}
           </p>
         </div>
       </header>
 
-      <div className="px-4 py-3 shrink-0">
+      <div className="px-4 py-3 shrink-0 space-y-3">
         <ExpiryCountdown expiresAt={bottle.expires_at} />
+        {participated && (
+          <KeepInBagButton
+            bottleId={id}
+            alreadyInBag={!!bagRow}
+            isExpired={expired}
+            onCollected={() => {}}
+          />
+        )}
       </div>
 
       {expired ? (
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <p className="text-5xl mb-4">🌊</p>
-          <h2 className="text-xl font-bold text-slate-800">This bottle has washed away</h2>
-          <p className="text-slate-600 mt-2 text-sm">
-            It drifted past its time limit and is no longer discoverable.
+          <h2 className="text-xl font-bold text-sky-50">This bottle has washed away</h2>
+          <p className="text-sky-200/80 mt-2 text-sm">
+            Keep it in your bag to save the conversation.
           </p>
           <Link
             href="/map"
-            className="mt-6 rounded-lg bg-sky-600 text-white px-5 py-2.5 font-semibold hover:bg-sky-700"
+            className="mt-6 rounded-lg bg-sky-500 text-white px-5 py-2.5 font-semibold hover:bg-sky-600"
           >
             Back to map
           </Link>

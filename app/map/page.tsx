@@ -2,12 +2,17 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { BottleType, NearbyBottle } from "@/lib/types";
-import { DISCOVERY_RADIUS_M } from "@/lib/types";
+import type { BottleType, NearbyBottle, BagItem, BottleCluster } from "@/lib/types";
+import { DISCOVERY_RADIUS_M, DEFAULT_BAG_SLOTS } from "@/lib/types";
 import BottleMap from "@/components/map/BottleMap";
 import DropBottleModal from "@/components/bottles/DropBottleModal";
 import BottlePreviewSheet from "@/components/bottles/BottlePreviewSheet";
+import ClusterListModal from "@/components/bottles/ClusterListModal";
 import InstallPrompt from "@/components/InstallPrompt";
+import GameHud from "@/components/hud/GameHud";
+import BagModal from "@/components/bag/BagModal";
+import WashedAshorePrompt from "@/components/bag/WashedAshorePrompt";
+import CastSplash from "@/components/bottles/CastSplash";
 
 export default function MapPage() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -15,10 +20,47 @@ export default function MapPage() {
   const [bottles, setBottles] = useState<NearbyBottle[]>([]);
   const [bottleTypes, setBottleTypes] = useState<BottleType[]>([]);
   const [selectedBottle, setSelectedBottle] = useState<NearbyBottle | null>(null);
+  const [clusterBottles, setClusterBottles] = useState<NearbyBottle[] | null>(null);
   const [showDropModal, setShowDropModal] = useState(false);
+  const [showBag, setShowBag] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [bottleCaps, setBottleCaps] = useState(0);
+  const [bagLimit, setBagLimit] = useState(DEFAULT_BAG_SLOTS);
+  const [bagItems, setBagItems] = useState<BagItem[]>([]);
+  const [capPulse, setCapPulse] = useState(false);
+  const [castSplash, setCastSplash] = useState<{ show: boolean; cost: number }>({
+    show: false,
+    cost: 0,
+  });
 
   const getSupabase = useCallback(() => createClient(), []);
+
+  const loadPlayer = useCallback(async () => {
+    const supabase = getSupabase();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("bottle_caps, bag_slot_limit")
+      .eq("id", user.id)
+      .single();
+
+    if (profile) {
+      setBottleCaps(profile.bottle_caps ?? 0);
+      setBagLimit(profile.bag_slot_limit ?? DEFAULT_BAG_SLOTS);
+    }
+
+    const { data: items } = await supabase
+      .from("bag_items")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("collected_at", { ascending: false });
+
+    if (items) setBagItems(items as BagItem[]);
+  }, [getSupabase]);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -45,7 +87,8 @@ export default function MapPage() {
       if (data) setBottleTypes(data);
     }
     loadTypes();
-  }, [getSupabase]);
+    loadPlayer();
+  }, [getSupabase, loadPlayer]);
 
   useEffect(() => {
     if (!userLocation) return;
@@ -64,12 +107,11 @@ export default function MapPage() {
     }
 
     loadBottles();
-
     const interval = setInterval(loadBottles, 30000);
     return () => clearInterval(interval);
   }, [userLocation, getSupabase]);
 
-  const handleBottleDropped = async () => {
+  const refreshBottles = async () => {
     if (!userLocation) return;
     const supabase = getSupabase();
     const { data } = await supabase.rpc("nearby_bottles", {
@@ -78,25 +120,28 @@ export default function MapPage() {
       radius_m: DISCOVERY_RADIUS_M,
     });
     if (data) setBottles(data);
+  };
+
+  const handleBottleDropped = async (capCost: number) => {
     setShowDropModal(false);
+    setCastSplash({ show: true, cost: capCost });
+    setBottleCaps((c) => c - capCost);
+    setCapPulse(true);
+    setTimeout(() => setCapPulse(false), 500);
+    await refreshBottles();
   };
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden">
-      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-3 bg-white/90 backdrop-blur-sm shadow-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🍾</span>
-          <h1 className="font-bold text-sky-900">BottledTalk</h1>
-        </div>
-        <form action="/auth/logout" method="post">
-          <button
-            type="submit"
-            className="text-sm text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-100"
-          >
-            Sign out
-          </button>
-        </form>
-      </header>
+    <div className="relative h-dvh w-full overflow-hidden game-map-bg">
+      <GameHud
+        bottleCaps={bottleCaps}
+        bagUsed={bagItems.length}
+        bagLimit={bagLimit}
+        capPulse={capPulse}
+        onOpenBag={() => setShowBag(true)}
+      />
+
+      <WashedAshorePrompt onCollected={loadPlayer} />
 
       {geoError ? (
         <div className="flex h-full items-center justify-center px-6 pt-16">
@@ -117,34 +162,35 @@ export default function MapPage() {
             userLocation={userLocation}
             bottles={bottles}
             onSelectBottle={setSelectedBottle}
+            onSelectCluster={(c: BottleCluster) => setClusterBottles(c.bottles)}
             radiusM={DISCOVERY_RADIUS_M}
           />
 
           {loading && bottles.length === 0 && (
-            <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 rounded-full bg-white/90 px-4 py-2 text-sm text-slate-600 shadow">
+            <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 rounded-full game-panel px-4 py-2 text-sm text-sky-100 shadow">
               Scanning for bottles…
             </div>
           )}
 
           {!loading && bottles.length === 0 && (
-            <div className="absolute bottom-24 left-4 right-4 z-10 rounded-xl bg-white/95 px-4 py-3 text-sm text-slate-600 shadow text-center">
+            <div className="absolute bottom-24 left-4 right-4 z-10 rounded-xl game-panel px-4 py-3 text-sm text-sky-100 shadow text-center">
               No bottles nearby — be the first to drop one!
             </div>
           )}
         </>
       ) : (
         <div className="flex h-full items-center justify-center pt-16">
-          <p className="text-slate-600">Finding your location…</p>
+          <p className="text-sky-100">Finding your location…</p>
         </div>
       )}
 
       {userLocation && (
         <button
           onClick={() => setShowDropModal(true)}
-          className="absolute bottom-6 right-4 z-20 flex items-center gap-2 rounded-full bg-sky-600 text-white px-5 py-3 font-semibold shadow-lg hover:bg-sky-700 transition-colors"
+          className="absolute bottom-6 right-4 z-20 flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-3 font-bold shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all animate-pulse-subtle"
         >
           <span>🍾</span>
-          Drop a bottle
+          Cast bottle
         </button>
       )}
 
@@ -155,14 +201,41 @@ export default function MapPage() {
         />
       )}
 
+      {clusterBottles && (
+        <ClusterListModal
+          bottles={clusterBottles}
+          onSelect={(b) => {
+            setClusterBottles(null);
+            setSelectedBottle(b);
+          }}
+          onClose={() => setClusterBottles(null)}
+        />
+      )}
+
       {showDropModal && userLocation && (
         <DropBottleModal
           bottleTypes={bottleTypes}
           location={userLocation}
+          bottleCaps={bottleCaps}
           onClose={() => setShowDropModal(false)}
           onSuccess={handleBottleDropped}
         />
       )}
+
+      {showBag && (
+        <BagModal
+          items={bagItems}
+          bagLimit={bagLimit}
+          onClose={() => setShowBag(false)}
+          onTrashed={loadPlayer}
+        />
+      )}
+
+      <CastSplash
+        show={castSplash.show}
+        capCost={castSplash.cost}
+        onDone={() => setCastSplash({ show: false, cost: 0 })}
+      />
 
       <InstallPrompt aboveFab />
     </div>

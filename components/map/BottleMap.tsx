@@ -3,23 +3,38 @@
 import { useMemo } from "react";
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { NearbyBottle } from "@/lib/types";
+import type { NearbyBottle, BottleCluster } from "@/lib/types";
+import { CLUSTER_RADIUS_M } from "@/lib/types";
 import { createDiscoveryCircleGeoJSON } from "@/lib/geo";
+import { clusterBottles } from "@/lib/clusterBottles";
 import BottleMarker from "@/components/bottles/BottleMarker";
+import ClusterMarker from "@/components/bottles/ClusterMarker";
 
 type Props = {
   userLocation: { lat: number; lng: number };
   bottles: NearbyBottle[];
   onSelectBottle: (bottle: NearbyBottle) => void;
+  onSelectCluster: (cluster: BottleCluster) => void;
   radiusM: number;
 };
 
-export default function BottleMap({ userLocation, bottles, onSelectBottle, radiusM }: Props) {
+export default function BottleMap({
+  userLocation,
+  bottles,
+  onSelectBottle,
+  onSelectCluster,
+  radiusM,
+}: Props) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
   const circleGeoJSON = useMemo(
     () => createDiscoveryCircleGeoJSON(userLocation.lng, userLocation.lat, radiusM),
     [userLocation.lng, userLocation.lat, radiusM]
+  );
+
+  const markers = useMemo(
+    () => clusterBottles(bottles, CLUSTER_RADIUS_M),
+    [bottles]
   );
 
   if (!token) {
@@ -61,13 +76,21 @@ export default function BottleMap({ userLocation, bottles, onSelectBottle, radiu
         </div>
       </Marker>
 
-      {bottles.map((bottle) => (
-        <BottleMarker
-          key={bottle.id}
-          bottle={bottle}
-          onClick={() => onSelectBottle(bottle)}
-        />
-      ))}
+      {markers.map((m) =>
+        m.kind === "single" ? (
+          <BottleMarker
+            key={m.bottle.id}
+            bottle={m.bottle}
+            onClick={() => onSelectBottle(m.bottle)}
+          />
+        ) : (
+          <ClusterMarker
+            key={m.cluster.id}
+            cluster={m.cluster}
+            onClick={() => onSelectCluster(m.cluster)}
+          />
+        )
+      )}
     </Map>
   );
 }

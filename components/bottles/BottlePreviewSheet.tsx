@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import type { NearbyBottle } from "@/lib/types";
 import { formatCountdown } from "@/lib/geo";
 
@@ -12,7 +13,12 @@ type Props = {
 export default function BottlePreviewSheet({ bottle, onClose }: Props) {
   return (
     <div className="absolute inset-x-0 bottom-0 z-30 px-4 pb-6">
-      <div className="mx-auto max-w-lg rounded-2xl bg-white shadow-2xl p-5">
+      <motion.div
+        className="mx-auto max-w-lg rounded-2xl game-panel-light shadow-2xl p-5"
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 28 }}
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div
@@ -38,16 +44,16 @@ export default function BottlePreviewSheet({ bottle, onClose }: Props) {
         </div>
 
         <p className="mt-3 text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
-          ⏳ Washes away in {formatCountdown(bottle.expires_at)}
+          Washes away in {formatCountdown(bottle.expires_at)}
         </p>
 
         <Link
           href={`/bottle/${bottle.id}`}
-          className="mt-4 block w-full rounded-lg bg-sky-600 text-white text-center font-semibold py-2.5 hover:bg-sky-700 transition-colors"
+          className="mt-4 block w-full rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 text-white text-center font-semibold py-2.5 hover:from-sky-700 hover:to-sky-600 transition-colors"
         >
           Open conversation
         </Link>
-      </div>
+      </motion.div>
     </div>
   );
 }

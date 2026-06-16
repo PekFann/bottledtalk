@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import type { BottleType } from "@/lib/types";
 import { formatDuration } from "@/lib/geo";
@@ -8,13 +9,15 @@ import { formatDuration } from "@/lib/geo";
 type Props = {
   bottleTypes: BottleType[];
   location: { lat: number; lng: number };
+  bottleCaps: number;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (capCost: number) => void;
 };
 
 export default function DropBottleModal({
   bottleTypes,
   location,
+  bottleCaps,
   onClose,
   onSuccess,
 }: Props) {
@@ -25,10 +28,13 @@ export default function DropBottleModal({
   const [error, setError] = useState<string | null>(null);
 
   const getSupabase = useCallback(() => createClient(), []);
+  const selectedType = bottleTypes.find((t) => t.id === selectedTypeId);
+  const cost = selectedType?.cap_cost ?? 0;
+  const canAfford = bottleCaps >= cost;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTypeId || !title.trim() || !message.trim()) return;
+    if (!selectedTypeId || !title.trim() || !message.trim() || !canAfford) return;
 
     setSubmitting(true);
     setError(null);
@@ -49,14 +55,23 @@ export default function DropBottleModal({
       return;
     }
 
-    if (data) onSuccess();
+    if (data) onSuccess(cost);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-4 sm:pb-0">
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl max-h-[90dvh] overflow-y-auto">
-        <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 px-5 py-4 bg-white rounded-t-2xl">
-          <h2 className="text-lg font-bold text-slate-900">Drop a bottle</h2>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
+      <motion.div
+        className="w-full max-w-lg rounded-2xl game-panel-light shadow-2xl max-h-[90dvh] overflow-y-auto"
+        initial={{ y: 60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+      >
+        <div className="sticky top-0 flex items-center justify-between border-b border-sky-200/50 px-5 py-4 bg-white/95 rounded-t-2xl">
+          <div>
+            <h2 className="text-lg font-bold text-sky-900">Cast a bottle</h2>
+            <p className="text-xs text-amber-700 font-medium">
+              Balance: {bottleCaps} caps
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 text-2xl leading-none"
@@ -72,22 +87,31 @@ export default function DropBottleModal({
               Bottle type
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {bottleTypes.map((type) => (
-                <button
-                  key={type.id}
-                  type="button"
-                  onClick={() => setSelectedTypeId(type.id)}
-                  className={`rounded-xl border-2 p-3 text-left transition-colors ${
-                    selectedTypeId === type.id
-                      ? "border-sky-500 bg-sky-50"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <span className="text-2xl">{type.icon}</span>
-                  <p className="font-semibold text-sm mt-1">{type.name}</p>
-                  <p className="text-xs text-slate-500">{formatDuration(type.duration_hours)}</p>
-                </button>
-              ))}
+              {bottleTypes.map((type) => {
+                const affordable = bottleCaps >= type.cap_cost;
+                const selected = selectedTypeId === type.id;
+                return (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => setSelectedTypeId(type.id)}
+                    className={`rounded-xl border-2 p-3 text-left transition-all ${
+                      selected
+                        ? "border-amber-400 bg-amber-50 shadow-md ring-2 ring-amber-200"
+                        : affordable
+                          ? "border-slate-200 hover:border-sky-300"
+                          : "border-slate-100 opacity-50"
+                    }`}
+                  >
+                    <span className="text-2xl">{type.icon}</span>
+                    <p className="font-semibold text-sm mt-1">{type.name}</p>
+                    <p className="text-xs text-slate-500">{formatDuration(type.duration_hours)}</p>
+                    <p className="text-xs font-bold text-amber-700 mt-1">
+                      {type.cap_cost} caps
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -101,7 +125,7 @@ export default function DropBottleModal({
               onChange={(e) => setTitle(e.target.value)}
               maxLength={80}
               required
-              className="w-full rounded-lg border border-slate-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-400"
+              className="w-full rounded-lg border border-slate-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-400 game-input"
               placeholder="A note for whoever finds this…"
             />
           </div>
@@ -117,14 +141,16 @@ export default function DropBottleModal({
               maxLength={1000}
               required
               rows={4}
-              className="w-full rounded-lg border border-slate-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-400 resize-none"
+              className="w-full rounded-lg border border-slate-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-400 resize-none game-input"
               placeholder="Write your message to the sea…"
             />
           </div>
 
-          <p className="text-xs text-slate-500">
-            📍 Dropping at your current location ({location.lat.toFixed(4)}, {location.lng.toFixed(4)})
-          </p>
+          {!canAfford && selectedType && (
+            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+              Need {cost} caps — you have {bottleCaps}
+            </p>
+          )}
 
           {error && (
             <div className="rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>
@@ -132,13 +158,15 @@ export default function DropBottleModal({
 
           <button
             type="submit"
-            disabled={submitting || !selectedTypeId}
-            className="w-full rounded-lg bg-sky-600 text-white font-semibold py-2.5 hover:bg-sky-700 disabled:opacity-50 transition-colors"
+            disabled={submitting || !selectedTypeId || !canAfford}
+            className="w-full rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 text-white font-bold py-3 hover:from-sky-700 hover:to-sky-600 disabled:opacity-50 transition-all shadow-lg"
           >
-            {submitting ? "Casting into the sea…" : "Cast bottle"}
+            {submitting
+              ? "Casting into the sea…"
+              : `Cast bottle (−${cost} caps)`}
           </button>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 }

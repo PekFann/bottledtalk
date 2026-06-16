@@ -1,6 +1,7 @@
 "use client";
 
 import { Marker } from "react-map-gl/mapbox";
+import { motion } from "framer-motion";
 import type { NearbyBottle } from "@/lib/types";
 
 type Props = {
@@ -11,9 +12,12 @@ type Props = {
 export default function BottleMarker({ bottle, onClick }: Props) {
   return (
     <Marker longitude={bottle.lng} latitude={bottle.lat} anchor="bottom">
-      <button
+      <motion.button
         onClick={onClick}
         className="flex flex-col items-center cursor-pointer group"
+        animate={{ y: [0, -5, 0] }}
+        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+        whileTap={{ scale: 0.9 }}
         aria-label={`Open bottle: ${bottle.title}`}
       >
         <div
@@ -25,7 +29,7 @@ export default function BottleMarker({ bottle, onClick }: Props) {
         <div className="mt-1 max-w-[80px] truncate rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-medium text-slate-700 shadow">
           {bottle.title}
         </div>
-      </button>
+      </motion.button>
     </Marker>
   );
 }

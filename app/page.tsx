@@ -72,7 +72,12 @@ export default async function HomePage() {
           </Link>
         )}
 
-        <div className="mt-20 grid sm:grid-cols-3 gap-6 text-left">
+        <div className="mt-20 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+          <FeatureCard
+            icon="🪙"
+            title="Bottle caps"
+            description="Start with 100 caps. Every bottle costs caps — Glass 10, Treasure 100."
+          />
           <FeatureCard
             icon="📍"
             title="Drop at your location"
@@ -81,22 +86,22 @@ export default async function HomePage() {
           <FeatureCard
             icon="🔭"
             title="Discover within 2km"
-            description="See bottles drifting nearby. Tap a marker to preview and open the thread."
+            description="Crowded spots cluster on the map. Tap to browse bottles at that location."
           />
           <FeatureCard
-            icon="⏳"
-            title="Bottles expire"
-            description="Glass lasts 24h, Cork 3 days, Driftwood a week, Treasure a month."
+            icon="🎒"
+            title="Collect in your bag"
+            description="Save 10 conversations. Keep bottles manually or when they wash ashore."
           />
         </div>
 
         <div className="mt-16 rounded-2xl bg-white/80 shadow-sm p-6 sm:p-8 text-left max-w-2xl mx-auto">
-          <h2 className="font-bold text-slate-900 text-lg mb-4">Bottle types</h2>
+          <h2 className="font-bold text-slate-900 text-lg mb-4">Bottle types &amp; costs</h2>
           <ul className="space-y-3">
-            <BottleTypeRow icon="🍾" name="Glass" duration="24 hours" color="#60a5fa" />
-            <BottleTypeRow icon="🪵" name="Cork" duration="3 days" color="#34d399" />
-            <BottleTypeRow icon="🌊" name="Driftwood" duration="7 days" color="#fbbf24" />
-            <BottleTypeRow icon="💎" name="Treasure" duration="30 days" color="#a78bfa" />
+            <BottleTypeRow icon="🍾" name="Glass" duration="24 hours" caps={10} color="#60a5fa" />
+            <BottleTypeRow icon="🪵" name="Cork" duration="3 days" caps={25} color="#34d399" />
+            <BottleTypeRow icon="🌊" name="Driftwood" duration="7 days" caps={50} color="#fbbf24" />
+            <BottleTypeRow icon="💎" name="Treasure" duration="30 days" caps={100} color="#a78bfa" />
           </ul>
         </div>
       </main>
@@ -132,11 +137,13 @@ function BottleTypeRow({
   icon,
   name,
   duration,
+  caps,
   color,
 }: {
   icon: string;
   name: string;
   duration: string;
+  caps: number;
   color: string;
 }) {
   return (
@@ -149,7 +156,10 @@ function BottleTypeRow({
       </div>
       <div>
         <span className="font-semibold text-slate-800">{name}</span>
-        <span className="text-slate-500 text-sm"> — lasts {duration}</span>
+        <span className="text-slate-500 text-sm">
+          {" "}
+          — {duration} · {caps} caps
+        </span>
       </div>
     </li>
   );
