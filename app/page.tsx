@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import InstallPrompt from "@/components/InstallPrompt";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +104,8 @@ export default async function HomePage() {
       <footer className="text-center text-sm text-slate-500 py-8">
         BottledTalk — messages adrift on the map
       </footer>
+
+      <InstallPrompt />
     </div>
   );
 }

@@ -81,6 +81,10 @@ Deploy `supabase/functions/cleanup-expired` and schedule it via Supabase cron or
 
 Deploy the Next.js app to [Vercel](https://vercel.com) with the same environment variables. Add your production URL to Supabase **Authentication → URL Configuration** redirect allowlist.
 
+For custom domain setup (`bottledtalk.com` / `www.bottledtalk.com`), see [docs/DOMAIN_SETUP.md](docs/DOMAIN_SETUP.md).
+
+**Add to Home Screen:** Works on HTTPS (production). Mobile users see an install banner on the landing page and map. Requires the web app manifest and service worker included in the project.
+
 ## Project structure
 
 ```

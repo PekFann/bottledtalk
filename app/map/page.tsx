@@ -7,6 +7,7 @@ import { DISCOVERY_RADIUS_M } from "@/lib/types";
 import BottleMap from "@/components/map/BottleMap";
 import DropBottleModal from "@/components/bottles/DropBottleModal";
 import BottlePreviewSheet from "@/components/bottles/BottlePreviewSheet";
+import InstallPrompt from "@/components/InstallPrompt";
 
 export default function MapPage() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -162,6 +163,8 @@ export default function MapPage() {
           onSuccess={handleBottleDropped}
         />
       )}
+
+      <InstallPrompt aboveFab />
     </div>
   );
 }

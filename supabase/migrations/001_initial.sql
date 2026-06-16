@@ -1,5 +1,8 @@
--- Enable PostGIS
+-- Enable PostGIS (required for geography/geometry types and geo functions)
 create extension if not exists postgis with schema extensions;
+
+-- PostGIS types/functions live in the extensions schema on Supabase
+set search_path = public, extensions;
 
 -- Profiles
 create table public.profiles (
@@ -99,14 +102,14 @@ returns table (
 language sql
 stable
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
   select
     b.id,
     b.creator_id,
     b.bottle_type_id,
-    st_y(b.location::geometry) as lat,
-    st_x(b.location::geometry) as lng,
+    st_y(b.location::extensions.geometry) as lat,
+    st_x(b.location::extensions.geometry) as lng,
     b.title,
     b.expires_at,
     b.created_at,
@@ -121,7 +124,7 @@ as $$
   where b.expires_at > now()
     and st_dwithin(
       b.location,
-      st_setsrid(st_makepoint(lng, lat), 4326)::geography,
+      st_setsrid(st_makepoint(lng, lat), 4326)::extensions.geography,
       radius_m
     )
   order by b.created_at desc;
@@ -138,7 +141,7 @@ create or replace function public.drop_bottle(
 returns uuid
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   new_bottle_id uuid;
@@ -152,7 +155,7 @@ begin
   values (
     uid,
     p_bottle_type_id,
-    st_setsrid(st_makepoint(p_lng, p_lat), 4326)::geography,
+    st_setsrid(st_makepoint(p_lng, p_lat), 4326)::extensions.geography,
     p_title,
     now() -- trigger overwrites this
   )
