@@ -1,0 +1,73 @@
+"use client";
+
+import { useMemo } from "react";
+import Map, { Marker, Source, Layer } from "react-map-gl/mapbox";
+import "mapbox-gl/dist/mapbox-gl.css";
+import type { NearbyBottle } from "@/lib/types";
+import { createDiscoveryCircleGeoJSON } from "@/lib/geo";
+import BottleMarker from "@/components/bottles/BottleMarker";
+
+type Props = {
+  userLocation: { lat: number; lng: number };
+  bottles: NearbyBottle[];
+  onSelectBottle: (bottle: NearbyBottle) => void;
+  radiusM: number;
+};
+
+export default function BottleMap({ userLocation, bottles, onSelectBottle, radiusM }: Props) {
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
+  const circleGeoJSON = useMemo(
+    () => createDiscoveryCircleGeoJSON(userLocation.lng, userLocation.lat, radiusM),
+    [userLocation.lng, userLocation.lat, radiusM]
+  );
+
+  if (!token) {
+    return (
+      <div className="flex h-full items-center justify-center px-6 pt-16 text-center text-slate-600">
+        Mapbox token missing. Add NEXT_PUBLIC_MAPBOX_TOKEN to your .env.local file.
+      </div>
+    );
+  }
+
+  return (
+    <Map
+      mapboxAccessToken={token}
+      initialViewState={{
+        longitude: userLocation.lng,
+        latitude: userLocation.lat,
+        zoom: 13,
+      }}
+      style={{ width: "100%", height: "100%" }}
+      mapStyle="mapbox://styles/mapbox/outdoors-v12"
+    >
+      <Source id="discovery-circle" type="geojson" data={circleGeoJSON}>
+        <Layer
+          id="discovery-fill"
+          type="fill"
+          paint={{ "fill-color": "#38bdf8", "fill-opacity": 0.08 }}
+        />
+        <Layer
+          id="discovery-outline"
+          type="line"
+          paint={{ "line-color": "#0ea5e9", "line-width": 2, "line-opacity": 0.5 }}
+        />
+      </Source>
+
+      <Marker longitude={userLocation.lng} latitude={userLocation.lat} anchor="center">
+        <div className="relative">
+          <div className="h-4 w-4 rounded-full bg-blue-500 border-2 border-white shadow-lg" />
+          <div className="absolute inset-0 h-4 w-4 rounded-full bg-blue-400 animate-ping opacity-40" />
+        </div>
+      </Marker>
+
+      {bottles.map((bottle) => (
+        <BottleMarker
+          key={bottle.id}
+          bottle={bottle}
+          onClick={() => onSelectBottle(bottle)}
+        />
+      ))}
+    </Map>
+  );
+}
