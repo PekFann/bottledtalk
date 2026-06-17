@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Backpack, Check, Map } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { formatCountdown, isExpired } from "@/lib/geo";
 
 type Props = {
   bottleId: string;
@@ -11,6 +12,7 @@ type Props = {
   typeIcon: string;
   typeName: string;
   creatorName: string;
+  expiresAt: string;
   participated: boolean;
   alreadyInBag: boolean;
   isExpired: boolean;
@@ -61,9 +63,10 @@ export default function BottleViewHeader({
   typeIcon,
   typeName,
   creatorName,
+  expiresAt,
   participated,
   alreadyInBag,
-  isExpired,
+  isExpired: isExpiredProp,
 }: Props) {
   const router = useRouter();
   const getSupabase = useCallback(() => createClient(), []);
@@ -72,12 +75,21 @@ export default function BottleViewHeader({
   const [bagLoading, setBagLoading] = useState(false);
   const [bagError, setBagError] = useState<string | null>(null);
   const [inBag, setInBag] = useState(alreadyInBag);
+  const [countdown, setCountdown] = useState(formatCountdown(expiresAt));
+  const expired = isExpiredProp || isExpired(expiresAt);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown(formatCountdown(expiresAt));
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [expiresAt]);
 
   const handleKeepInBag = async () => {
     setBagLoading(true);
     setBagError(null);
     const supabase = getSupabase();
-    const reason = isExpired ? "expired" : "manual";
+    const reason = expired ? "expired" : "manual";
     const { error: rpcError } = await supabase.rpc("collect_to_bag", {
       p_bottle_id: bottleId,
       p_reason: reason,
@@ -99,6 +111,7 @@ export default function BottleViewHeader({
           <h1 className="font-handwriting text-xl text-slate-800 truncate">{title}</h1>
           <p className="text-xs text-slate-500">
             {typeIcon} {typeName} · by {creatorName}
+            {expired ? " · Washed away" : ` · Washes away in ${countdown}`}
           </p>
         </div>
 

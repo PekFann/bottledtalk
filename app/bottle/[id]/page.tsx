@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isExpired } from "@/lib/geo";
 import MessageThread from "@/components/bottles/MessageThread";
-import ExpiryCountdown from "@/components/bottles/ExpiryCountdown";
 import BottleViewHeader from "@/components/bottles/BottleViewHeader";
 import type { Message } from "@/lib/types";
 
@@ -93,14 +92,11 @@ export default async function BottlePage({
         typeIcon={bottleType?.icon ?? "🍾"}
         typeName={bottleType?.name ?? "Bottle"}
         creatorName={creator?.display_name ?? "Sailor"}
+        expiresAt={bottle.expires_at}
         participated={participated}
         alreadyInBag={!!bagRow}
         isExpired={expired}
       />
-
-      <div className="px-4 py-3 shrink-0">
-        <ExpiryCountdown expiresAt={bottle.expires_at} />
-      </div>
 
       {expired ? (
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">

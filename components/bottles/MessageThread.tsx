@@ -93,12 +93,14 @@ export default function MessageThread({
             key={msg.id}
             className="border-b border-slate-200/80 pb-4 mb-4 last:border-0 last:mb-0"
           >
-            <p className="text-xs text-slate-500 mb-1.5">
-              {msg.author?.display_name ?? "Sailor"} ·{" "}
-              {new Date(msg.created_at).toLocaleString()}
-            </p>
             <p className="font-handwriting text-lg text-slate-800 whitespace-pre-wrap leading-relaxed">
-              {msg.body}
+              <span className="text-slate-600">
+                {msg.author?.display_name ?? "Sailor"}:
+              </span>{" "}
+              {msg.body}{" "}
+              <span className="text-xs text-slate-400 font-sans align-baseline">
+                {new Date(msg.created_at).toLocaleString()}
+              </span>
             </p>
           </article>
         ))}
