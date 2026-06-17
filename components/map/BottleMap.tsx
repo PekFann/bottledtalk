@@ -8,6 +8,11 @@ import type { NearbyBottle, BottleCluster } from "@/lib/types";
 import { CLUSTER_RADIUS_M } from "@/lib/types";
 import { createDiscoveryCircleGeoJSON } from "@/lib/geo";
 import { clusterBottles } from "@/lib/clusterBottles";
+import {
+  MAP_STYLE_DEFAULT,
+  PASTEL_COLORS,
+  applyPastelMapTheme,
+} from "@/lib/mapTheme";
 import BottleMarker from "@/components/bottles/BottleMarker";
 import ClusterMarker from "@/components/bottles/ClusterMarker";
 
@@ -38,8 +43,7 @@ export default function BottleMap({
     [bottles]
   );
 
-  const mapStyle =
-    process.env.NEXT_PUBLIC_MAPBOX_STYLE ?? "mapbox://styles/mapbox/dark-v11";
+  const mapStyle = process.env.NEXT_PUBLIC_MAPBOX_STYLE ?? MAP_STYLE_DEFAULT;
 
   const handleMapLoad = useCallback((e: MapEvent) => {
     const map = e.target;
@@ -52,7 +56,7 @@ export default function BottleMap({
       });
       map.setTerrain({ source: "mapbox-dem", exaggeration: 1.2 });
     }
-    map.setFog({});
+    applyPastelMapTheme(map);
   }, []);
 
   if (!token) {
@@ -82,19 +86,32 @@ export default function BottleMap({
         <Layer
           id="discovery-fill"
           type="fill"
-          paint={{ "fill-color": "#38bdf8", "fill-opacity": 0.15 }}
+          paint={{
+            "fill-color": PASTEL_COLORS.discoveryFill,
+            "fill-opacity": PASTEL_COLORS.discoveryFillOpacity,
+          }}
         />
         <Layer
           id="discovery-outline"
           type="line"
-          paint={{ "line-color": "#7dd3fc", "line-width": 2, "line-opacity": 0.5 }}
+          paint={{
+            "line-color": PASTEL_COLORS.discoveryOutline,
+            "line-width": 2,
+            "line-opacity": PASTEL_COLORS.discoveryOutlineOpacity,
+          }}
         />
       </Source>
 
       <Marker longitude={userLocation.lng} latitude={userLocation.lat} anchor="center">
         <div className="relative">
-          <div className="h-4 w-4 rounded-full bg-blue-500 border-2 border-white shadow-lg" />
-          <div className="absolute inset-0 h-4 w-4 rounded-full bg-blue-400 animate-ping opacity-40" />
+          <div
+            className="h-4 w-4 rounded-full border-2 border-white shadow-lg"
+            style={{ backgroundColor: PASTEL_COLORS.userPin }}
+          />
+          <div
+            className="absolute inset-0 h-4 w-4 rounded-full animate-ping opacity-40"
+            style={{ backgroundColor: PASTEL_COLORS.userPinPing }}
+          />
         </div>
       </Marker>
 

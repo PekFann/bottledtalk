@@ -172,20 +172,20 @@ export default function MapPage() {
           />
 
           {loading && bottles.length === 0 && (
-            <div className="absolute bottom-44 left-1/2 -translate-x-1/2 z-10 rounded-full game-panel px-4 py-2 text-sm text-white/90 shadow">
+            <div className="absolute bottom-44 left-1/2 -translate-x-1/2 z-10 rounded-full game-panel-pastel px-4 py-2 text-sm text-rose-800/90 shadow">
               Scanning for bottles…
             </div>
           )}
 
           {!loading && bottles.length === 0 && (
-            <div className="absolute bottom-44 left-4 right-20 z-10 rounded-xl game-panel px-4 py-3 text-sm text-white/90 shadow text-center">
+            <div className="absolute bottom-44 left-4 right-20 z-10 rounded-xl game-panel-pastel px-4 py-3 text-sm text-rose-800/90 shadow text-center">
               No bottles nearby — be the first to drop one!
             </div>
           )}
         </>
       ) : (
         <div className="flex h-full items-center justify-center pt-16">
-          <p className="text-sky-100">Finding your location…</p>
+          <p className="text-rose-700/80">Finding your location…</p>
         </div>
       )}
 
