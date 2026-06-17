@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Coins, MessageCircle } from "lucide-react";
 import UserMenu from "@/components/hud/UserMenu";
+import { getJournalTitle } from "@/lib/display";
 
 type Props = {
   bottleCaps: number;
@@ -23,7 +24,7 @@ export default function GameHud({
         <div className="flex items-center gap-2 min-w-0">
           <MessageCircle className="h-4 w-4 shrink-0 text-teal-500" strokeWidth={2.25} />
           <span className="font-medium text-slate-700 truncate text-sm tracking-tight">
-            BottledTalk
+            {getJournalTitle(displayName)}
           </span>
         </div>
 
