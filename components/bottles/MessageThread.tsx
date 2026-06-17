@@ -87,38 +87,21 @@ export default function MessageThread({
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.map((msg) => {
-          const isOwn = msg.author_id === currentUserId;
-          return (
-            <div
-              key={msg.id}
-              className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
-                  isOwn
-                    ? "bg-sky-600 text-white rounded-br-md"
-                    : "bg-white text-slate-800 shadow-sm rounded-bl-md"
-                }`}
-              >
-                {!isOwn && (
-                  <p className="text-xs font-semibold text-sky-600 mb-1">
-                    {msg.author?.display_name ?? "Sailor"}
-                  </p>
-                )}
-                <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
-                <p
-                  className={`text-[10px] mt-1 ${
-                    isOwn ? "text-sky-200" : "text-slate-400"
-                  }`}
-                >
-                  {new Date(msg.created_at).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-0">
+        {messages.map((msg) => (
+          <article
+            key={msg.id}
+            className="border-b border-slate-200/80 pb-4 mb-4 last:border-0 last:mb-0"
+          >
+            <p className="text-xs text-slate-500 mb-1.5">
+              {msg.author?.display_name ?? "Sailor"} ·{" "}
+              {new Date(msg.created_at).toLocaleString()}
+            </p>
+            <p className="font-handwriting text-lg text-slate-800 whitespace-pre-wrap leading-relaxed">
+              {msg.body}
+            </p>
+          </article>
+        ))}
         <div ref={bottomRef} />
       </div>
 
@@ -129,22 +112,25 @@ export default function MessageThread({
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="border-t border-slate-200 bg-white px-4 py-3 flex gap-2"
+          className="border-t border-slate-200 bg-white/80 px-4 py-3 space-y-2"
         >
-          <input
+          <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             maxLength={1000}
+            rows={3}
             placeholder="Continue the conversation…"
-            className="flex-1 rounded-full border border-slate-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
+            className="font-handwriting w-full rounded-lg border border-slate-200 px-4 py-2.5 text-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-400/50 resize-none game-input"
           />
-          <button
-            type="submit"
-            disabled={submitting || !body.trim()}
-            className="rounded-full bg-sky-600 text-white px-5 py-2.5 text-sm font-semibold hover:bg-sky-700 disabled:opacity-50"
-          >
-            Send
-          </button>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={submitting || !body.trim()}
+              className="rounded-lg bg-teal-500 text-white px-5 py-2 text-sm font-semibold hover:bg-teal-600 disabled:opacity-50"
+            >
+              Send
+            </button>
+          </div>
         </form>
       )}
 

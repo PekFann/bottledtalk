@@ -30,8 +30,8 @@ function ActionButton({
         whileTap={{ scale: 0.92 }}
         className={`action-circle ${
           variant === "primary"
-            ? "bg-pink-400 text-white shadow-lg shadow-pink-300/40 hover:bg-pink-500"
-            : "bg-white/80 text-pink-500 border border-pink-200/80 backdrop-blur-md hover:bg-pink-50"
+            ? "bg-teal-400 text-white shadow-lg shadow-teal-300/40 hover:bg-teal-500"
+            : "bg-white/85 text-teal-600 border border-teal-200/80 backdrop-blur-md hover:bg-sky-50"
         }`}
         aria-label={label}
       >

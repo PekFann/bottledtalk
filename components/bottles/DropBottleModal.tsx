@@ -127,7 +127,7 @@ export default function DropBottleModal({
               onChange={(e) => setTitle(e.target.value)}
               maxLength={80}
               required
-              className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 game-input"
+              className="font-handwriting w-full rounded-lg border border-slate-200 px-4 py-2.5 text-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/50 game-input"
               placeholder="A note for whoever finds this…"
             />
           </div>
@@ -143,7 +143,7 @@ export default function DropBottleModal({
               maxLength={1000}
               required
               rows={4}
-              className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 resize-none game-input"
+              className="font-handwriting w-full rounded-lg border border-slate-200 px-4 py-2.5 text-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/50 resize-none game-input"
               placeholder="Write your message to the sea…"
             />
           </div>

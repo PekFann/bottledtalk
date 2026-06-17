@@ -53,7 +53,7 @@ export default function UserMenu({ displayName, email }: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-100 border border-pink-200 text-xs font-semibold text-rose-700 hover:bg-pink-200 transition-colors"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 border border-teal-200 text-xs font-semibold text-teal-700 hover:bg-sky-200 transition-colors"
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Account menu"
@@ -66,7 +66,7 @@ export default function UserMenu({ displayName, email }: Props) {
           role="menu"
           className="glass-dropdown-pastel absolute right-0 top-full mt-2 w-48 py-1 z-30"
         >
-          <p className="px-3 py-2 text-xs text-rose-400 truncate border-b border-pink-100">
+          <p className="px-3 py-2 text-xs text-slate-500 truncate border-b border-slate-200/80">
             {label}
           </p>
 
@@ -74,7 +74,7 @@ export default function UserMenu({ displayName, email }: Props) {
             type="button"
             role="menuitem"
             disabled
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-rose-300 cursor-not-allowed"
+            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed"
           >
             <User className="h-4 w-4 shrink-0" />
             Profile
@@ -85,20 +85,20 @@ export default function UserMenu({ displayName, email }: Props) {
             type="button"
             role="menuitem"
             disabled
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-rose-300 cursor-not-allowed"
+            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed"
           >
             <Settings className="h-4 w-4 shrink-0" />
             Settings
             <span className="ml-auto text-[10px] uppercase tracking-wide">Soon</span>
           </button>
 
-          <div className="my-1 border-t border-pink-100" />
+          <div className="my-1 border-t border-slate-200/80" />
 
           <form action="/auth/logout" method="post">
             <button
               type="submit"
               role="menuitem"
-              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-rose-800 hover:bg-pink-50 transition-colors"
+              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-sky-50 transition-colors"
             >
               <LogOut className="h-4 w-4 shrink-0" />
               Sign out

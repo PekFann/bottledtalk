@@ -3,17 +3,17 @@ import type { Map as MapboxMap } from "mapbox-gl";
 export const MAP_STYLE_DEFAULT = "mapbox://styles/mapbox/light-v11";
 
 export const PASTEL_COLORS = {
-  water: "#E8D5F2",
-  background: "#FFF5F8",
-  land: "#FFF5F8",
-  fogLow: "rgb(255, 232, 245)",
-  fogHigh: "rgb(233, 213, 255)",
-  discoveryFill: "#F0ABFC",
-  discoveryFillOpacity: 0.18,
-  discoveryOutline: "#E879A9",
+  water: "#D4E8F7",
+  background: "#FAF8F5",
+  land: "#FAF8F5",
+  fogLow: "rgb(240, 248, 252)",
+  fogHigh: "rgb(220, 235, 245)",
+  discoveryFill: "#93C5FD",
+  discoveryFillOpacity: 0.15,
+  discoveryOutline: "#7BAFD4",
   discoveryOutlineOpacity: 0.55,
-  userPin: "#F472B6",
-  userPinPing: "#F9A8D4",
+  userPin: "#5BA3B8",
+  userPinPing: "#7EC8D8",
 } as const;
 
 export function applyPastelMapTheme(map: MapboxMap) {

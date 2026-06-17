@@ -1,6 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { Patrick_Hand } from "next/font/google";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import "./globals.css";
+
+const patrickHand = Patrick_Hand({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-handwriting",
+});
 
 export const metadata: Metadata = {
   title: "BottledTalk — Message Bottles on the Map",
@@ -17,7 +24,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0369a1",
+  themeColor: "#5ba3b8",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -29,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={patrickHand.variable}>
       <body className="antialiased">
         {children}
         <ServiceWorkerRegister />

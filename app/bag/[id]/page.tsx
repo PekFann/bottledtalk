@@ -32,43 +32,43 @@ export default async function BagItemPage({
 
   return (
     <div className="flex flex-col h-dvh game-map-bg">
-      <header className="flex items-center gap-3 border-b border-sky-800/30 game-panel px-4 py-3 shrink-0">
+      <header className="flex items-center gap-3 border-b border-teal-200/50 game-panel-pastel px-4 py-3 shrink-0">
         <Link
           href="/map"
-          className="text-sky-200 hover:text-white text-sm font-medium"
+          className="text-teal-600 hover:text-teal-800 text-sm font-medium"
         >
           ← Map
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-sky-50 truncate">{item.title}</h1>
-          <p className="text-xs text-sky-200/80">
+          <h1 className="font-handwriting text-xl text-slate-800 truncate">{item.title}</h1>
+          <p className="text-xs text-slate-500">
             {item.type_icon} {item.type_name} · saved{" "}
             {new Date(item.collected_at).toLocaleDateString()}
           </p>
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 bg-white/60">
         {messages.length === 0 ? (
-          <p className="text-center text-sky-200/70 text-sm py-8">No messages saved</p>
+          <p className="text-center text-slate-500 text-sm py-8">No messages saved</p>
         ) : (
           messages.map((msg, i) => (
-            <div key={i} className="flex justify-start">
-              <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-white/95 text-slate-800 shadow-sm px-4 py-2.5">
-                <p className="text-xs font-semibold text-sky-600 mb-1">
-                  {msg.author_name}
-                </p>
-                <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  {new Date(msg.created_at).toLocaleString()}
-                </p>
-              </div>
-            </div>
+            <article
+              key={i}
+              className="border-b border-slate-200/80 pb-4 mb-4 last:border-0 last:mb-0"
+            >
+              <p className="text-xs text-slate-500 mb-1.5">
+                {msg.author_name} · {new Date(msg.created_at).toLocaleString()}
+              </p>
+              <p className="font-handwriting text-lg text-slate-800 whitespace-pre-wrap leading-relaxed">
+                {msg.body}
+              </p>
+            </article>
           ))
         )}
       </div>
 
-      <div className="border-t border-sky-800/30 game-panel px-4 py-3 text-center text-xs text-sky-200/70">
+      <div className="border-t border-teal-200/50 game-panel-pastel px-4 py-3 text-center text-xs text-slate-500">
         Archived conversation — read only
       </div>
     </div>

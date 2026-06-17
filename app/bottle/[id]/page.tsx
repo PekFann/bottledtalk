@@ -87,16 +87,16 @@ export default async function BottlePage({
 
   return (
     <div className="flex flex-col h-dvh game-map-bg">
-      <header className="flex items-center gap-3 border-b border-sky-800/30 game-panel px-4 py-3 shrink-0">
+      <header className="flex items-center gap-3 border-b border-teal-200/50 game-panel-pastel px-4 py-3 shrink-0">
         <Link
           href="/map"
-          className="text-sky-200 hover:text-white text-sm font-medium"
+          className="text-teal-600 hover:text-teal-800 text-sm font-medium"
         >
           ← Map
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-sky-50 truncate">{bottle.title}</h1>
-          <p className="text-xs text-sky-200/80">
+          <h1 className="font-handwriting text-xl text-slate-800 truncate">{bottle.title}</h1>
+          <p className="text-xs text-slate-500">
             {bottleType?.icon} {bottleType?.name} · by {creator?.display_name}
           </p>
         </div>
@@ -116,24 +116,26 @@ export default async function BottlePage({
       {expired ? (
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <p className="text-5xl mb-4">🌊</p>
-          <h2 className="text-xl font-bold text-sky-50">This bottle has washed away</h2>
-          <p className="text-sky-200/80 mt-2 text-sm">
+          <h2 className="text-xl font-bold text-slate-700">This bottle has washed away</h2>
+          <p className="text-slate-500 mt-2 text-sm">
             Keep it in your bag to save the conversation.
           </p>
           <Link
             href="/map"
-            className="mt-6 rounded-lg bg-sky-500 text-white px-5 py-2.5 font-semibold hover:bg-sky-600"
+            className="mt-6 rounded-lg bg-teal-500 text-white px-5 py-2.5 font-semibold hover:bg-teal-600"
           >
             Back to map
           </Link>
         </div>
       ) : (
-        <MessageThread
-          bottleId={id}
-          initialMessages={normalizedMessages}
-          currentUserId={user.id}
-          isExpired={false}
-        />
+        <div className="flex flex-col flex-1 min-h-0 bg-white/60">
+          <MessageThread
+            bottleId={id}
+            initialMessages={normalizedMessages}
+            currentUserId={user.id}
+            isExpired={false}
+          />
+        </div>
       )}
     </div>
   );
