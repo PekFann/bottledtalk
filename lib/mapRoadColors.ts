@@ -1,26 +1,45 @@
 import type { Map as MapboxMap } from "mapbox-gl";
 
-const HIGHWAY_LAYERS = new Set([
-  "road-motorway",
-  "road-motorway-link",
-  "road-trunk",
-  "road-trunk-link",
-]);
-
-const HIGHWAY_CASE_SUFFIX = "-case";
-
-const LIGHT_ROAD_LAYERS = new Set([
-  "road-primary",
-  "road-secondary",
-  "road-tertiary",
-  "road-street",
-  "road-minor",
-  "road-construction",
-]);
-
 const HIGHWAY_COLOR = "#6b7280";
 const HIGHWAY_CASE_COLOR = "#9ca3af";
 const LIGHT_ROAD_COLOR = "#e5e7eb";
+
+const SKIP_PATTERNS = ["label", "rail", "path", "pedestrian", "steps"];
+
+function isHighwayLayer(id: string): boolean {
+  return (
+    id.includes("motorway") || id.includes("trunk") || id.includes("major-link")
+  );
+}
+
+function isLightRoadLayer(id: string): boolean {
+  return (
+    id.includes("primary") ||
+    id.includes("secondary") ||
+    id.includes("tertiary") ||
+    id.includes("street") ||
+    id.includes("minor") ||
+    id.includes("construction")
+  );
+}
+
+function shouldSkipRoadLayer(id: string): boolean {
+  return SKIP_PATTERNS.some((pattern) => id.includes(pattern));
+}
+
+function classifyRoadLayer(id: string): string | null {
+  if (!id.startsWith("road-") || shouldSkipRoadLayer(id)) return null;
+
+  if (isHighwayLayer(id)) {
+    return id.endsWith("-case") ? HIGHWAY_CASE_COLOR : HIGHWAY_COLOR;
+  }
+
+  if (isLightRoadLayer(id)) {
+    return LIGHT_ROAD_COLOR;
+  }
+
+  return null;
+}
 
 function setLineColorIfExists(map: MapboxMap, layerId: string, color: string) {
   const layer = map.getLayer(layerId);
@@ -31,21 +50,19 @@ function setLineColorIfExists(map: MapboxMap, layerId: string, color: string) {
 
 export function applyGreyRoadColors(map: MapboxMap) {
   const layers = map.getStyle()?.layers ?? [];
+  let matched = 0;
 
   for (const layer of layers) {
     if (layer.type !== "line" || !layer.id.startsWith("road-")) continue;
 
-    const id = layer.id;
+    const color = classifyRoadLayer(layer.id);
+    if (!color) continue;
 
-    if (HIGHWAY_LAYERS.has(id)) {
-      setLineColorIfExists(map, id, HIGHWAY_COLOR);
-    } else if (
-      id.endsWith(HIGHWAY_CASE_SUFFIX) &&
-      (id.includes("motorway") || id.includes("trunk"))
-    ) {
-      setLineColorIfExists(map, id, HIGHWAY_CASE_COLOR);
-    } else if (LIGHT_ROAD_LAYERS.has(id)) {
-      setLineColorIfExists(map, id, LIGHT_ROAD_COLOR);
-    }
+    setLineColorIfExists(map, layer.id, color);
+    matched++;
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    console.debug(`[mapRoadColors] recolored ${matched} road layers`);
   }
 }

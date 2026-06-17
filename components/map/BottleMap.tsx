@@ -59,6 +59,7 @@ export default function BottleMap({
       map.setTerrain({ source: "mapbox-dem", exaggeration: 1.0 });
     }
     applyGreyRoadColors(map);
+    map.once("style.load", () => applyGreyRoadColors(map));
   }, []);
 
   if (!token) {
