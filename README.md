@@ -54,8 +54,9 @@ Copy `.env.example` to `.env.local` and fill in:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_MAPBOX_TOKEN=your-mapbox-public-token
-NEXT_PUBLIC_MAPBOX_STYLE=mapbox://styles/mapbox/light-v11
 ```
+
+The map uses Mapbox **outdoors-v12** (colorful terrain style) built into the app — no style env var needed.
 
 ### 5. Run locally
 

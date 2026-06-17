@@ -11,7 +11,7 @@ import { clusterBottles } from "@/lib/clusterBottles";
 import BottleMarker from "@/components/bottles/BottleMarker";
 import ClusterMarker from "@/components/bottles/ClusterMarker";
 
-const MAP_STYLE_DEFAULT = "mapbox://styles/mapbox/light-v11";
+const MAP_STYLE = "mapbox://styles/mapbox/outdoors-v12";
 
 const DISCOVERY_FILL = "#3b82f6";
 const DISCOVERY_OUTLINE = "#2563eb";
@@ -44,7 +44,7 @@ export default function BottleMap({
     [bottles]
   );
 
-  const mapStyle = process.env.NEXT_PUBLIC_MAPBOX_STYLE ?? MAP_STYLE_DEFAULT;
+  const mapStyle = MAP_STYLE;
 
   const handleMapLoad = useCallback((e: MapEvent) => {
     const map = e.target;
@@ -55,9 +55,8 @@ export default function BottleMap({
         tileSize: 512,
         maxzoom: 14,
       });
-      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.2 });
+      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.0 });
     }
-    map.setFog({});
   }, []);
 
   if (!token) {
@@ -75,7 +74,7 @@ export default function BottleMap({
         longitude: userLocation.lng,
         latitude: userLocation.lat,
         zoom: 14,
-        pitch: 50,
+        pitch: 45,
         bearing: -15,
       }}
       maxPitch={85}
