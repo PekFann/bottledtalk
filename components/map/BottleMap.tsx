@@ -37,6 +37,9 @@ export default function BottleMap({
     [bottles]
   );
 
+  const mapStyle =
+    process.env.NEXT_PUBLIC_MAPBOX_STYLE ?? "mapbox://styles/mapbox/dark-v11";
+
   if (!token) {
     return (
       <div className="flex h-full items-center justify-center px-6 pt-16 text-center text-slate-600">
@@ -54,18 +57,18 @@ export default function BottleMap({
         zoom: 13,
       }}
       style={{ width: "100%", height: "100%" }}
-      mapStyle="mapbox://styles/mapbox/outdoors-v12"
+      mapStyle={mapStyle}
     >
       <Source id="discovery-circle" type="geojson" data={circleGeoJSON}>
         <Layer
           id="discovery-fill"
           type="fill"
-          paint={{ "fill-color": "#38bdf8", "fill-opacity": 0.08 }}
+          paint={{ "fill-color": "#38bdf8", "fill-opacity": 0.15 }}
         />
         <Layer
           id="discovery-outline"
           type="line"
-          paint={{ "line-color": "#0ea5e9", "line-width": 2, "line-opacity": 0.5 }}
+          paint={{ "line-color": "#7dd3fc", "line-width": 2, "line-opacity": 0.5 }}
         />
       </Source>
 
