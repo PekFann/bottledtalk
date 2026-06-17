@@ -8,6 +8,7 @@ import type { NearbyBottle, BottleCluster } from "@/lib/types";
 import { CLUSTER_RADIUS_M } from "@/lib/types";
 import { createDiscoveryCircleGeoJSON } from "@/lib/geo";
 import { clusterBottles } from "@/lib/clusterBottles";
+import { applyGreyRoadColors } from "@/lib/mapRoadColors";
 import BottleMarker from "@/components/bottles/BottleMarker";
 import ClusterMarker from "@/components/bottles/ClusterMarker";
 
@@ -57,6 +58,7 @@ export default function BottleMap({
       });
       map.setTerrain({ source: "mapbox-dem", exaggeration: 1.0 });
     }
+    applyGreyRoadColors(map);
   }, []);
 
   if (!token) {

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isExpired } from "@/lib/geo";
 import MessageThread from "@/components/bottles/MessageThread";
 import ExpiryCountdown from "@/components/bottles/ExpiryCountdown";
-import KeepInBagButton from "@/components/bag/KeepInBagButton";
+import BottleViewHeader from "@/components/bottles/BottleViewHeader";
 import type { Message } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -87,30 +87,19 @@ export default async function BottlePage({
 
   return (
     <div className="flex flex-col h-dvh game-map-bg">
-      <header className="flex items-center gap-3 border-b border-teal-200/50 game-panel-pastel px-4 py-3 shrink-0">
-        <Link
-          href="/map"
-          className="text-teal-600 hover:text-teal-800 text-sm font-medium"
-        >
-          ← Map
-        </Link>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-handwriting text-xl text-slate-800 truncate">{bottle.title}</h1>
-          <p className="text-xs text-slate-500">
-            {bottleType?.icon} {bottleType?.name} · by {creator?.display_name}
-          </p>
-        </div>
-      </header>
+      <BottleViewHeader
+        bottleId={id}
+        title={bottle.title}
+        typeIcon={bottleType?.icon ?? "🍾"}
+        typeName={bottleType?.name ?? "Bottle"}
+        creatorName={creator?.display_name ?? "Sailor"}
+        participated={participated}
+        alreadyInBag={!!bagRow}
+        isExpired={expired}
+      />
 
-      <div className="px-4 py-3 shrink-0 space-y-3">
+      <div className="px-4 py-3 shrink-0">
         <ExpiryCountdown expiresAt={bottle.expires_at} />
-        {participated && (
-          <KeepInBagButton
-            bottleId={id}
-            alreadyInBag={!!bagRow}
-            isExpired={expired}
-          />
-        )}
       </div>
 
       {expired ? (
