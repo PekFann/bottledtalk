@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Map, User } from "lucide-react";
 
 type Props = {
   displayName: string | null;
   email: string | null;
+  onOpenMapColors: () => void;
 };
 
 function getInitials(displayName: string | null, email: string | null): string {
@@ -20,7 +21,11 @@ function getInitials(displayName: string | null, email: string | null): string {
   return "?";
 }
 
-export default function UserMenu({ displayName, email }: Props) {
+export default function UserMenu({
+  displayName,
+  email,
+  onOpenMapColors,
+}: Props) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -84,12 +89,14 @@ export default function UserMenu({ displayName, email }: Props) {
           <button
             type="button"
             role="menuitem"
-            disabled
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed"
+            onClick={() => {
+              setOpen(false);
+              onOpenMapColors();
+            }}
+            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-sky-50 transition-colors"
           >
-            <Settings className="h-4 w-4 shrink-0" />
-            Settings
-            <span className="ml-auto text-[10px] uppercase tracking-wide">Soon</span>
+            <Map className="h-4 w-4 shrink-0" />
+            Map colors
           </button>
 
           <div className="my-1 border-t border-slate-200/80" />

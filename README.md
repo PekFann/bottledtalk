@@ -54,7 +54,19 @@ Copy `.env.example` to `.env.local` and fill in:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_MAPBOX_TOKEN=your-mapbox-public-token
+NEXT_PUBLIC_MAPBOX_STYLE=mapbox://styles/mapbox/light-v11
 ```
+
+### Customizing map colors
+
+**In the app:** open the account menu (top-right) → **Map colors**. Adjust tint strength, water/park/discovery colors, and fog. Settings are saved on your device.
+
+**For production defaults:** set optional env vars in `.env.local` or Vercel (see `.env.example`):
+
+- `NEXT_PUBLIC_MAP_TINT_STRENGTH` — `0` = standard Mapbox map, `1` = full pastel tint (default `0.45`)
+- `NEXT_PUBLIC_MAP_WATER`, `NEXT_PUBLIC_MAP_PARK`, `NEXT_PUBLIC_MAP_DISCOVERY_FILL`, `NEXT_PUBLIC_MAP_USER_PIN` — hex colors
+
+Land and roads are left to the base Mapbox style so streets and labels stay visible.
 
 ### 5. Run locally
 

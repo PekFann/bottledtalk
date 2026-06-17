@@ -10,8 +10,8 @@ import { createDiscoveryCircleGeoJSON } from "@/lib/geo";
 import { clusterBottles } from "@/lib/clusterBottles";
 import {
   MAP_STYLE_DEFAULT,
-  PASTEL_COLORS,
-  applyPastelMapTheme,
+  applyMapTheme,
+  type MapThemeConfig,
 } from "@/lib/mapTheme";
 import BottleMarker from "@/components/bottles/BottleMarker";
 import ClusterMarker from "@/components/bottles/ClusterMarker";
@@ -22,6 +22,8 @@ type Props = {
   onSelectBottle: (bottle: NearbyBottle) => void;
   onSelectCluster: (cluster: BottleCluster) => void;
   radiusM: number;
+  themeConfig: MapThemeConfig;
+  themeKey: number;
 };
 
 export default function BottleMap({
@@ -30,6 +32,8 @@ export default function BottleMap({
   onSelectBottle,
   onSelectCluster,
   radiusM,
+  themeConfig,
+  themeKey,
 }: Props) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -45,19 +49,22 @@ export default function BottleMap({
 
   const mapStyle = process.env.NEXT_PUBLIC_MAPBOX_STYLE ?? MAP_STYLE_DEFAULT;
 
-  const handleMapLoad = useCallback((e: MapEvent) => {
-    const map = e.target;
-    if (!map.getSource("mapbox-dem")) {
-      map.addSource("mapbox-dem", {
-        type: "raster-dem",
-        url: "mapbox://mapbox.mapbox-terrain-dem-v1",
-        tileSize: 512,
-        maxzoom: 14,
-      });
-      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.2 });
-    }
-    applyPastelMapTheme(map);
-  }, []);
+  const handleMapLoad = useCallback(
+    (e: MapEvent) => {
+      const map = e.target;
+      if (!map.getSource("mapbox-dem")) {
+        map.addSource("mapbox-dem", {
+          type: "raster-dem",
+          url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+          tileSize: 512,
+          maxzoom: 14,
+        });
+        map.setTerrain({ source: "mapbox-dem", exaggeration: 1.2 });
+      }
+      applyMapTheme(map, themeConfig);
+    },
+    [themeConfig]
+  );
 
   if (!token) {
     return (
@@ -69,6 +76,7 @@ export default function BottleMap({
 
   return (
     <Map
+      key={themeKey}
       mapboxAccessToken={token}
       initialViewState={{
         longitude: userLocation.lng,
@@ -87,17 +95,17 @@ export default function BottleMap({
           id="discovery-fill"
           type="fill"
           paint={{
-            "fill-color": PASTEL_COLORS.discoveryFill,
-            "fill-opacity": PASTEL_COLORS.discoveryFillOpacity,
+            "fill-color": themeConfig.discoveryFill,
+            "fill-opacity": themeConfig.discoveryFillOpacity,
           }}
         />
         <Layer
           id="discovery-outline"
           type="line"
           paint={{
-            "line-color": PASTEL_COLORS.discoveryOutline,
+            "line-color": themeConfig.discoveryOutline,
             "line-width": 2,
-            "line-opacity": PASTEL_COLORS.discoveryOutlineOpacity,
+            "line-opacity": themeConfig.discoveryOutlineOpacity,
           }}
         />
       </Source>
@@ -106,11 +114,11 @@ export default function BottleMap({
         <div className="relative">
           <div
             className="h-4 w-4 rounded-full border-2 border-white shadow-lg"
-            style={{ backgroundColor: PASTEL_COLORS.userPin }}
+            style={{ backgroundColor: themeConfig.userPin }}
           />
           <div
             className="absolute inset-0 h-4 w-4 rounded-full animate-ping opacity-40"
-            style={{ backgroundColor: PASTEL_COLORS.userPinPing }}
+            style={{ backgroundColor: themeConfig.userPinPing }}
           />
         </div>
       </Marker>

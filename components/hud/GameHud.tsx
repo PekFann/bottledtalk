@@ -9,6 +9,7 @@ type Props = {
   capPulse?: boolean;
   displayName: string | null;
   email: string | null;
+  onOpenMapColors: () => void;
 };
 
 export default function GameHud({
@@ -16,6 +17,7 @@ export default function GameHud({
   capPulse,
   displayName,
   email,
+  onOpenMapColors,
 }: Props) {
   return (
     <header className="absolute top-0 left-0 right-0 z-20 px-3 py-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
@@ -39,7 +41,11 @@ export default function GameHud({
             </span>
           </motion.div>
 
-          <UserMenu displayName={displayName} email={email} />
+          <UserMenu
+            displayName={displayName}
+            email={email}
+            onOpenMapColors={onOpenMapColors}
+          />
         </div>
       </div>
     </header>
