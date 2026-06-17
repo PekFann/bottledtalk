@@ -24,12 +24,12 @@ export function isExpired(expiresAt: string): boolean {
   return new Date(expiresAt).getTime() <= Date.now();
 }
 
-export function createDiscoveryCircleGeoJSON(
+function buildCircleRing(
   lng: number,
   lat: number,
   radiusM: number,
   points = 64
-) {
+): [number, number][] {
   const coords: [number, number][] = [];
   const earthRadius = 6371000;
 
@@ -43,11 +43,46 @@ export function createDiscoveryCircleGeoJSON(
     coords.push([newLng, newLat]);
   }
 
+  return coords;
+}
+
+const DISCOVERY_MASK_OUTER_RADIUS_MULTIPLIER = 6;
+
+export function createDiscoveryCircleGeoJSON(
+  lng: number,
+  lat: number,
+  radiusM: number,
+  points = 64
+) {
   return {
     type: "Feature" as const,
     geometry: {
       type: "Polygon" as const,
-      coordinates: [coords],
+      coordinates: [buildCircleRing(lng, lat, radiusM, points)],
+    },
+    properties: {},
+  };
+}
+
+export function createDiscoveryMaskGeoJSON(
+  lng: number,
+  lat: number,
+  radiusM: number,
+  points = 64
+) {
+  const outer = buildCircleRing(
+    lng,
+    lat,
+    radiusM * DISCOVERY_MASK_OUTER_RADIUS_MULTIPLIER,
+    points
+  );
+  const inner = [...buildCircleRing(lng, lat, radiusM, points)].reverse();
+
+  return {
+    type: "Feature" as const,
+    geometry: {
+      type: "Polygon" as const,
+      coordinates: [outer, inner],
     },
     properties: {},
   };

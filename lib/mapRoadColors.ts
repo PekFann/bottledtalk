@@ -6,6 +6,14 @@ const LIGHT_ROAD_COLOR = "#e5e7eb";
 
 const SKIP_PATTERNS = ["label", "rail", "path", "pedestrian", "steps"];
 
+function isRoadLikeLayer(id: string): boolean {
+  return (
+    id.startsWith("road-") ||
+    id.startsWith("bridge-") ||
+    id.startsWith("tunnel-")
+  );
+}
+
 function isHighwayLayer(id: string): boolean {
   return (
     id.includes("motorway") || id.includes("trunk") || id.includes("major-link")
@@ -28,7 +36,7 @@ function shouldSkipRoadLayer(id: string): boolean {
 }
 
 function classifyRoadLayer(id: string): string | null {
-  if (!id.startsWith("road-") || shouldSkipRoadLayer(id)) return null;
+  if (!isRoadLikeLayer(id) || shouldSkipRoadLayer(id)) return null;
 
   if (isHighwayLayer(id)) {
     return id.endsWith("-case") ? HIGHWAY_CASE_COLOR : HIGHWAY_COLOR;
@@ -53,7 +61,7 @@ export function applyGreyRoadColors(map: MapboxMap) {
   let matched = 0;
 
   for (const layer of layers) {
-    if (layer.type !== "line" || !layer.id.startsWith("road-")) continue;
+    if (layer.type !== "line" || !isRoadLikeLayer(layer.id)) continue;
 
     const color = classifyRoadLayer(layer.id);
     if (!color) continue;

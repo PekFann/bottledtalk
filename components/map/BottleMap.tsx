@@ -6,7 +6,10 @@ import type { MapEvent } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { NearbyBottle, BottleCluster } from "@/lib/types";
 import { CLUSTER_RADIUS_M } from "@/lib/types";
-import { createDiscoveryCircleGeoJSON } from "@/lib/geo";
+import {
+  createDiscoveryCircleGeoJSON,
+  createDiscoveryMaskGeoJSON,
+} from "@/lib/geo";
 import { clusterBottles } from "@/lib/clusterBottles";
 import { applyGreyRoadColors } from "@/lib/mapRoadColors";
 import BottleMarker from "@/components/bottles/BottleMarker";
@@ -14,8 +17,8 @@ import ClusterMarker from "@/components/bottles/ClusterMarker";
 
 const MAP_STYLE = "mapbox://styles/mapbox/outdoors-v12";
 
-const DISCOVERY_FILL = "#3b82f6";
-const DISCOVERY_OUTLINE = "#2563eb";
+const DISCOVERY_OUTLINE = "#64748b";
+const DISCOVERY_MASK_FILL = "#6b7280";
 const USER_PIN = "#3b82f6";
 
 type Props = {
@@ -37,6 +40,11 @@ export default function BottleMap({
 
   const circleGeoJSON = useMemo(
     () => createDiscoveryCircleGeoJSON(userLocation.lng, userLocation.lat, radiusM),
+    [userLocation.lng, userLocation.lat, radiusM]
+  );
+
+  const maskGeoJSON = useMemo(
+    () => createDiscoveryMaskGeoJSON(userLocation.lng, userLocation.lat, radiusM),
     [userLocation.lng, userLocation.lat, radiusM]
   );
 
@@ -85,19 +93,26 @@ export default function BottleMap({
       mapStyle={mapStyle}
       onLoad={handleMapLoad}
     >
-      <Source id="discovery-circle" type="geojson" data={circleGeoJSON}>
+      <Source id="discovery-mask" type="geojson" data={maskGeoJSON}>
         <Layer
-          id="discovery-fill"
+          id="discovery-mask-fill"
           type="fill"
-          paint={{ "fill-color": DISCOVERY_FILL, "fill-opacity": 0.15 }}
+          paint={{
+            "fill-color": DISCOVERY_MASK_FILL,
+            "fill-opacity": 0.35,
+          }}
         />
+      </Source>
+
+      <Source id="discovery-circle" type="geojson" data={circleGeoJSON}>
         <Layer
           id="discovery-outline"
           type="line"
           paint={{
             "line-color": DISCOVERY_OUTLINE,
             "line-width": 2,
-            "line-opacity": 0.5,
+            "line-opacity": 0.8,
+            "line-dasharray": [2, 2],
           }}
         />
       </Source>
