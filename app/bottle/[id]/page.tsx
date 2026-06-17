@@ -32,7 +32,7 @@ export default async function BottlePage({
       title,
       expires_at,
       created_at,
-      bottle_type:bottle_types (id, slug, name, description, duration_hours, icon, marker_color, cap_cost),
+      bottle_type:bottle_types (id, slug, name, description, duration_hours, icon, marker_color),
       creator:profiles!bottles_creator_id_fkey (id, display_name, avatar_url, created_at)
     `
     )
@@ -56,12 +56,15 @@ export default async function BottlePage({
     .eq("bottle_id", id)
     .order("created_at", { ascending: true });
 
-  const { data: bagRow } = await supabase
+  let bagRow: { id: string } | null = null;
+  const { data: bagData, error: bagError } = await supabase
     .from("bag_items")
     .select("id")
     .eq("user_id", user.id)
     .eq("source_bottle_id", id)
     .maybeSingle();
+
+  if (!bagError && bagData) bagRow = bagData;
 
   const expired = isExpired(bottle.expires_at);
   const bottleType = Array.isArray(bottle.bottle_type)
@@ -106,7 +109,6 @@ export default async function BottlePage({
             bottleId={id}
             alreadyInBag={!!bagRow}
             isExpired={expired}
-            onCollected={() => {}}
           />
         )}
       </div>

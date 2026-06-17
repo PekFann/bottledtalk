@@ -8,14 +8,12 @@ type Props = {
   bottleId: string;
   alreadyInBag: boolean;
   isExpired: boolean;
-  onCollected: () => void;
 };
 
 export default function KeepInBagButton({
   bottleId,
   alreadyInBag,
   isExpired,
-  onCollected,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +44,6 @@ export default function KeepInBagButton({
       return;
     }
     setDone(true);
-    onCollected();
     router.refresh();
   };
 
