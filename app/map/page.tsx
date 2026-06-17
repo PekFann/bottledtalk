@@ -10,6 +10,7 @@ import BottlePreviewSheet from "@/components/bottles/BottlePreviewSheet";
 import ClusterListModal from "@/components/bottles/ClusterListModal";
 import InstallPrompt from "@/components/InstallPrompt";
 import GameHud from "@/components/hud/GameHud";
+import MapActionBar from "@/components/hud/MapActionBar";
 import BagModal from "@/components/bag/BagModal";
 import WashedAshorePrompt from "@/components/bag/WashedAshorePrompt";
 import CastSplash from "@/components/bottles/CastSplash";
@@ -32,6 +33,8 @@ export default function MapPage() {
     show: false,
     cost: 0,
   });
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   const getSupabase = useCallback(() => createClient(), []);
 
@@ -42,15 +45,18 @@ export default function MapPage() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
+    setUserEmail(user.email ?? null);
+
     const { data: profile } = await supabase
       .from("profiles")
-      .select("bottle_caps, bag_slot_limit")
+      .select("bottle_caps, bag_slot_limit, display_name")
       .eq("id", user.id)
       .single();
 
     if (profile) {
       setBottleCaps(profile.bottle_caps ?? 0);
       setBagLimit(profile.bag_slot_limit ?? DEFAULT_BAG_SLOTS);
+      setDisplayName(profile.display_name ?? null);
     }
 
     const { data: items } = await supabase
@@ -135,10 +141,9 @@ export default function MapPage() {
     <div className="relative h-dvh w-full overflow-hidden game-map-bg">
       <GameHud
         bottleCaps={bottleCaps}
-        bagUsed={bagItems.length}
-        bagLimit={bagLimit}
         capPulse={capPulse}
-        onOpenBag={() => setShowBag(true)}
+        displayName={displayName}
+        email={userEmail}
       />
 
       <WashedAshorePrompt onCollected={loadPlayer} />
@@ -167,13 +172,13 @@ export default function MapPage() {
           />
 
           {loading && bottles.length === 0 && (
-            <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 rounded-full game-panel px-4 py-2 text-sm text-sky-100 shadow">
+            <div className="absolute bottom-44 left-1/2 -translate-x-1/2 z-10 rounded-full game-panel px-4 py-2 text-sm text-white/90 shadow">
               Scanning for bottles…
             </div>
           )}
 
           {!loading && bottles.length === 0 && (
-            <div className="absolute bottom-24 left-4 right-4 z-10 rounded-xl game-panel px-4 py-3 text-sm text-sky-100 shadow text-center">
+            <div className="absolute bottom-44 left-4 right-20 z-10 rounded-xl game-panel px-4 py-3 text-sm text-white/90 shadow text-center">
               No bottles nearby — be the first to drop one!
             </div>
           )}
@@ -185,13 +190,12 @@ export default function MapPage() {
       )}
 
       {userLocation && (
-        <button
-          onClick={() => setShowDropModal(true)}
-          className="absolute bottom-6 right-4 z-20 flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-3 font-bold shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all animate-pulse-subtle"
-        >
-          <span>🍾</span>
-          Cast bottle
-        </button>
+        <MapActionBar
+          bagUsed={bagItems.length}
+          bagLimit={bagLimit}
+          onCast={() => setShowDropModal(true)}
+          onOpenBag={() => setShowBag(true)}
+        />
       )}
 
       {selectedBottle && (

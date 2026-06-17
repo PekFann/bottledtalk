@@ -75,7 +75,7 @@ export default function InstallPrompt({ aboveFab = false }: { aboveFab?: boolean
   return (
     <div
       className={`fixed left-0 right-0 z-40 p-4 md:hidden ${
-        aboveFab ? "bottom-20" : "bottom-0"
+        aboveFab ? "bottom-36" : "bottom-0"
       }`}
     >
       <div className="mx-auto max-w-lg rounded-2xl bg-white shadow-2xl border border-sky-100 p-4">

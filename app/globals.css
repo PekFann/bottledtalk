@@ -16,28 +16,57 @@ body {
 }
 
 .game-map-bg {
-  background: linear-gradient(180deg, #0c4a6e 0%, #0369a1 40%, #0284c7 100%);
+  background: #0a1628;
 }
 
 .game-panel {
-  background: rgba(12, 74, 110, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  border-radius: 1rem;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
 }
 
 .game-panel-light {
-  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 1px solid rgba(14, 165, 233, 0.2);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .game-input:focus {
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
 }
 
 .slot-glow {
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
+  box-shadow: none;
+}
+
+.action-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  transition: background-color 0.15s ease;
+}
+
+.action-label {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+  font-weight: 500;
+  max-width: 5rem;
+}
+
+.glass-dropdown {
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 @keyframes bob {
@@ -49,15 +78,6 @@ body {
   0% { transform: scale(1); }
   50% { transform: scale(1.15); }
   100% { transform: scale(1); }
-}
-
-@keyframes pulseSubtle {
-  0%, 100% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4); }
-  50% { box-shadow: 0 4px 28px rgba(245, 158, 11, 0.7); }
-}
-
-.animate-pulse-subtle {
-  animation: pulseSubtle 2.5s ease-in-out infinite;
 }
 
 .mapboxgl-ctrl-logo,

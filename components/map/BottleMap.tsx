@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox";
+import type { MapEvent } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { NearbyBottle, BottleCluster } from "@/lib/types";
 import { CLUSTER_RADIUS_M } from "@/lib/types";
@@ -40,6 +41,20 @@ export default function BottleMap({
   const mapStyle =
     process.env.NEXT_PUBLIC_MAPBOX_STYLE ?? "mapbox://styles/mapbox/dark-v11";
 
+  const handleMapLoad = useCallback((e: MapEvent) => {
+    const map = e.target;
+    if (!map.getSource("mapbox-dem")) {
+      map.addSource("mapbox-dem", {
+        type: "raster-dem",
+        url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+        tileSize: 512,
+        maxzoom: 14,
+      });
+      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.2 });
+    }
+    map.setFog({});
+  }, []);
+
   if (!token) {
     return (
       <div className="flex h-full items-center justify-center px-6 pt-16 text-center text-slate-600">
@@ -54,10 +69,14 @@ export default function BottleMap({
       initialViewState={{
         longitude: userLocation.lng,
         latitude: userLocation.lat,
-        zoom: 13,
+        zoom: 14,
+        pitch: 50,
+        bearing: -15,
       }}
+      maxPitch={85}
       style={{ width: "100%", height: "100%" }}
       mapStyle={mapStyle}
+      onLoad={handleMapLoad}
     >
       <Source id="discovery-circle" type="geojson" data={circleGeoJSON}>
         <Layer

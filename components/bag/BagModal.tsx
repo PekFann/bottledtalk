@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
+import { Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { BagItem } from "@/lib/types";
 import Link from "next/link";
@@ -30,25 +31,25 @@ export default function BagModal({ items, bagLimit, onClose, onTrashed }: Props)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-4 sm:pb-0">
       <motion.div
-        className="w-full max-w-lg rounded-2xl game-panel-light max-h-[85dvh] overflow-hidden flex flex-col"
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        className="w-full max-w-lg rounded-xl game-panel-light max-h-[85dvh] overflow-hidden flex flex-col"
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
       >
-        <div className="flex items-center justify-between border-b border-sky-200/50 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-sky-900">Your bag</h2>
-            <p className="text-xs text-slate-500">
-              {items.length}/{bagLimit} slots · saved conversations
+            <h2 className="text-base font-semibold text-slate-900">Your bag</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {items.length}/{bagLimit} slots
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 text-2xl leading-none"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
             aria-label="Close"
           >
-            ×
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -56,16 +57,16 @@ export default function BagModal({ items, bagLimit, onClose, onTrashed }: Props)
           {items.map((item) => (
             <motion.div
               key={item.id}
-              className="rounded-xl border-2 border-sky-200 bg-white p-3 slot-glow"
+              className="rounded-lg border border-slate-200 bg-slate-50/50 p-3"
               layout
             >
               <div
-                className="mx-auto flex h-12 w-12 items-center justify-center rounded-full text-2xl mb-2"
+                className="mx-auto flex h-11 w-11 items-center justify-center rounded-full text-xl mb-2"
                 style={{ backgroundColor: item.marker_color }}
               >
                 {item.type_icon}
               </div>
-              <p className="font-semibold text-sm text-slate-900 truncate text-center">
+              <p className="font-medium text-sm text-slate-900 truncate text-center">
                 {item.title}
               </p>
               <p className="text-[10px] text-slate-500 text-center mt-1">
@@ -74,7 +75,7 @@ export default function BagModal({ items, bagLimit, onClose, onTrashed }: Props)
               <div className="flex gap-1 mt-3">
                 <Link
                   href={`/bag/${item.id}`}
-                  className="flex-1 text-center rounded-lg bg-sky-600 text-white text-xs font-semibold py-1.5 hover:bg-sky-700"
+                  className="flex-1 text-center rounded-md bg-slate-900 text-white text-xs font-medium py-1.5 hover:bg-slate-800 transition-colors"
                 >
                   Open
                 </Link>
@@ -82,13 +83,14 @@ export default function BagModal({ items, bagLimit, onClose, onTrashed }: Props)
                   type="button"
                   onClick={() => setConfirmId(item.id)}
                   disabled={trashingId === item.id}
-                  className="rounded-lg border border-red-200 text-red-600 text-xs px-2 py-1.5 hover:bg-red-50"
+                  className="rounded-md border border-slate-200 text-slate-500 px-2 py-1.5 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+                  aria-label="Trash bottle"
                 >
-                  🗑
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
               {confirmId === item.id && (
-                <div className="mt-2 p-2 rounded-lg bg-red-50 text-xs">
+                <div className="mt-2 p-2 rounded-md bg-red-50 text-xs">
                   <p className="text-red-800 mb-2">Trash this bottle?</p>
                   <div className="flex gap-1">
                     <button
@@ -101,7 +103,7 @@ export default function BagModal({ items, bagLimit, onClose, onTrashed }: Props)
                     <button
                       type="button"
                       onClick={() => setConfirmId(null)}
-                      className="flex-1 border rounded py-1"
+                      className="flex-1 border border-slate-200 rounded py-1"
                     >
                       No
                     </button>
@@ -114,9 +116,9 @@ export default function BagModal({ items, bagLimit, onClose, onTrashed }: Props)
           {Array.from({ length: emptySlots }).map((_, i) => (
             <div
               key={`empty-${i}`}
-              className="rounded-xl border-2 border-dashed border-sky-200/80 bg-sky-50/50 min-h-[140px] flex items-center justify-center"
+              className="rounded-lg border border-dashed border-slate-200 min-h-[130px] flex items-center justify-center"
             >
-              <span className="text-sky-300 text-2xl">+</span>
+              <span className="text-slate-300 text-xl">+</span>
             </div>
           ))}
         </div>
