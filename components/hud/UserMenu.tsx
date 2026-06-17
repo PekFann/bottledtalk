@@ -1,31 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LogOut, Map, User } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 
 type Props = {
   displayName: string | null;
   email: string | null;
-  onOpenMapColors: () => void;
 };
 
-function getInitials(displayName: string | null, email: string | null): string {
-  if (displayName?.trim()) {
-    const parts = displayName.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return displayName.slice(0, 2).toUpperCase();
-  }
-  if (email) return email.slice(0, 2).toUpperCase();
-  return "?";
-}
-
-export default function UserMenu({
-  displayName,
-  email,
-  onOpenMapColors,
-}: Props) {
+export default function UserMenu({ displayName, email }: Props) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -50,7 +33,6 @@ export default function UserMenu({
     };
   }, [open]);
 
-  const initials = getInitials(displayName, email);
   const label = displayName ?? email ?? "Account";
 
   return (
@@ -58,12 +40,12 @@ export default function UserMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 border border-teal-200 text-xs font-semibold text-teal-700 hover:bg-sky-200 transition-colors"
+        className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-100 border border-slate-200 text-slate-700 hover:bg-sky-200 transition-colors"
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label="Account menu"
+        aria-label="Menu"
       >
-        {initials}
+        <Menu className="h-5 w-5" strokeWidth={2} />
       </button>
 
       {open && (
@@ -84,19 +66,6 @@ export default function UserMenu({
             <User className="h-4 w-4 shrink-0" />
             Profile
             <span className="ml-auto text-[10px] uppercase tracking-wide">Soon</span>
-          </button>
-
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setOpen(false);
-              onOpenMapColors();
-            }}
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-sky-50 transition-colors"
-          >
-            <Map className="h-4 w-4 shrink-0" />
-            Map colors
           </button>
 
           <div className="my-1 border-t border-slate-200/80" />

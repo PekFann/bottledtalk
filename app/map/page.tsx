@@ -1,17 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { BottleType, NearbyBottle, BagItem, BottleCluster } from "@/lib/types";
 import { DISCOVERY_RADIUS_M, DEFAULT_BAG_SLOTS } from "@/lib/types";
-import { getMapThemeConfig, type MapThemeOverrides } from "@/lib/mapTheme";
-import {
-  clearMapThemeOverrides,
-  loadMapThemeOverrides,
-  saveMapThemeOverrides,
-} from "@/lib/mapThemeStorage";
 import BottleMap from "@/components/map/BottleMap";
-import MapAppearancePanel from "@/components/map/MapAppearancePanel";
 import DropBottleModal from "@/components/bottles/DropBottleModal";
 import BottlePreviewSheet from "@/components/bottles/BottlePreviewSheet";
 import ClusterListModal from "@/components/bottles/ClusterListModal";
@@ -42,31 +35,6 @@ export default function MapPage() {
   });
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [showMapAppearance, setShowMapAppearance] = useState(false);
-  const [mapThemeKey, setMapThemeKey] = useState(0);
-  const [savedOverrides, setSavedOverrides] = useState<MapThemeOverrides | null>(null);
-
-  const mapThemeConfig = useMemo(
-    () => getMapThemeConfig(savedOverrides ?? undefined),
-    [savedOverrides]
-  );
-
-  useEffect(() => {
-    setSavedOverrides(loadMapThemeOverrides());
-  }, []);
-
-  const handleMapThemeApply = (overrides: MapThemeOverrides) => {
-    saveMapThemeOverrides(overrides);
-    setSavedOverrides(overrides);
-    setMapThemeKey((k) => k + 1);
-  };
-
-  const handleMapThemeReset = () => {
-    clearMapThemeOverrides();
-    setSavedOverrides(null);
-    setMapThemeKey((k) => k + 1);
-    setShowMapAppearance(false);
-  };
 
   const getSupabase = useCallback(() => createClient(), []);
 
@@ -176,7 +144,6 @@ export default function MapPage() {
         capPulse={capPulse}
         displayName={displayName}
         email={userEmail}
-        onOpenMapColors={() => setShowMapAppearance(true)}
       />
 
       <WashedAshorePrompt onCollected={loadPlayer} />
@@ -202,8 +169,6 @@ export default function MapPage() {
             onSelectBottle={setSelectedBottle}
             onSelectCluster={(c: BottleCluster) => setClusterBottles(c.bottles)}
             radiusM={DISCOVERY_RADIUS_M}
-            themeConfig={mapThemeConfig}
-            themeKey={mapThemeKey}
           />
 
           {loading && bottles.length === 0 && (
@@ -277,16 +242,6 @@ export default function MapPage() {
       />
 
       <InstallPrompt aboveFab />
-
-      {showMapAppearance && (
-        <MapAppearancePanel
-          initialConfig={mapThemeConfig}
-          savedOverrides={savedOverrides}
-          onClose={() => setShowMapAppearance(false)}
-          onApply={handleMapThemeApply}
-          onReset={handleMapThemeReset}
-        />
-      )}
     </div>
   );
 }
