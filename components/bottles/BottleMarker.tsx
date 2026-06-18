@@ -3,7 +3,7 @@
 import { Marker } from "react-map-gl/mapbox";
 import { motion } from "framer-motion";
 import type { NearbyBottle } from "@/lib/types";
-import { DEFAULT_BOTTLE_MARKER_SRC } from "@/lib/bottleAssets";
+import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
   bottle: NearbyBottle;
@@ -30,37 +30,23 @@ export default function BottleMarker({ bottle, onClick, isSelected = false }: Pr
           {bottle.title}
         </div>
 
-        {isSelected ? (
-          <motion.div
-            className="relative z-10"
-            initial={false}
-            animate={{ y: -12, scale: 1.1 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          >
-            <div
-              className="flex h-12 w-12 items-center justify-center rounded-full text-xl shadow-lg border-2 border-white"
-              style={{ backgroundColor: bottle.marker_color }}
-            >
-              {bottle.type_icon}
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            className="relative z-10"
-            animate={{ y: [0, -6, 0] }}
-            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <img
-              src={DEFAULT_BOTTLE_MARKER_SRC}
-              alt=""
-              width={52}
-              height={52}
-              className="h-[52px] w-[52px] object-contain pointer-events-none drop-shadow-sm transition-transform group-hover:scale-110"
-              draggable={false}
-            />
-          </motion.div>
-        )}
+        <motion.div
+          className="relative z-10"
+          initial={false}
+          animate={
+            isSelected
+              ? { y: -12, scale: 1.1 }
+              : { y: [0, -6, 0], scale: 1 }
+          }
+          transition={
+            isSelected
+              ? { type: "spring", stiffness: 400, damping: 25 }
+              : { repeat: Infinity, duration: 3, ease: "easeInOut" }
+          }
+          whileTap={{ scale: 0.9 }}
+        >
+          <BottleImage size="lg" className="transition-transform group-hover:scale-110" />
+        </motion.div>
 
         <motion.div
           className="mt-0.5 h-2.5 w-10 rounded-[50%] bg-black/30 blur-[1px]"

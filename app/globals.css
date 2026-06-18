@@ -69,11 +69,11 @@ body {
 }
 
 .btn-primary {
-  @apply rounded-lg bg-teal-500 text-white font-semibold hover:bg-teal-600 disabled:opacity-50 transition-colors;
+  @apply rounded-lg bg-sky-500 text-white font-semibold hover:bg-sky-600 disabled:opacity-50 transition-colors;
 }
 
 .btn-primary-block {
-  @apply rounded-lg bg-teal-500 text-white font-semibold hover:bg-teal-600 disabled:opacity-50 transition-colors w-full text-center py-2.5;
+  @apply rounded-lg bg-sky-500 text-white font-semibold hover:bg-sky-600 disabled:opacity-50 transition-colors w-full text-center py-2.5;
 }
 
 .paper-panel {

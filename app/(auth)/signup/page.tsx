@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BottleImage from "@/components/bottles/BottleImage";
 
 export default function SignupPage({
   searchParams,
@@ -19,7 +20,7 @@ async function SignupForm({
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-100 to-blue-50 px-4">
       <div className="w-full max-w-md rounded-2xl glass shadow-xl p-8">
         <div className="text-center mb-8">
-          <span className="text-4xl">🍾</span>
+          <BottleImage size="md" className="mx-auto" />
           <h1 className="text-2xl font-bold text-sky-900 mt-2">BottledTalk</h1>
           <p className="text-slate-600 mt-1">Join the bottle network</p>
         </div>

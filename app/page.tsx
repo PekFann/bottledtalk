@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import InstallPrompt from "@/components/InstallPrompt";
+import BottleImage from "@/components/bottles/BottleImage";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-blue-50 to-amber-50">
       <header className="flex items-center justify-between px-6 py-5 max-w-5xl mx-auto">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🍾</span>
+          <BottleImage size="sm" />
           <span className="font-bold text-sky-900 text-lg">BottledTalk</span>
         </div>
         {user ? (
@@ -98,10 +99,10 @@ export default async function HomePage() {
         <div className="mt-16 rounded-2xl glass p-6 sm:p-8 text-left max-w-2xl mx-auto">
           <h2 className="font-bold text-slate-900 text-lg mb-4">Bottle types &amp; costs</h2>
           <ul className="space-y-3">
-            <BottleTypeRow icon="🍾" name="Glass" duration="24 hours" caps={10} color="#60a5fa" />
-            <BottleTypeRow icon="🪵" name="Cork" duration="3 days" caps={25} color="#34d399" />
-            <BottleTypeRow icon="🌊" name="Driftwood" duration="7 days" caps={50} color="#fbbf24" />
-            <BottleTypeRow icon="💎" name="Treasure" duration="30 days" caps={100} color="#a78bfa" />
+            <BottleTypeRow name="Glass" duration="24 hours" caps={10} />
+            <BottleTypeRow name="Cork" duration="3 days" caps={25} />
+            <BottleTypeRow name="Driftwood" duration="7 days" caps={50} />
+            <BottleTypeRow name="Treasure" duration="30 days" caps={100} />
           </ul>
         </div>
       </main>
@@ -134,26 +135,17 @@ function FeatureCard({
 }
 
 function BottleTypeRow({
-  icon,
   name,
   duration,
   caps,
-  color,
 }: {
-  icon: string;
   name: string;
   duration: string;
   caps: number;
-  color: string;
 }) {
   return (
     <li className="flex items-center gap-3">
-      <div
-        className="flex h-9 w-9 items-center justify-center rounded-full text-lg shrink-0"
-        style={{ backgroundColor: color }}
-      >
-        {icon}
-      </div>
+      <BottleImage size="sm" className="shrink-0" />
       <div>
         <span className="font-semibold text-slate-800">{name}</span>
         <span className="text-slate-500 text-sm">

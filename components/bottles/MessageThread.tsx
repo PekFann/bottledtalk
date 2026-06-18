@@ -122,7 +122,7 @@ export default function MessageThread({
             maxLength={1000}
             rows={3}
             placeholder="Continue the conversation…"
-            className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400/50 resize-none game-input"
+            className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400/50 resize-none game-input"
           />
           <div className="flex justify-end">
             <button

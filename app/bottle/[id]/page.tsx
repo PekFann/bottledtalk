@@ -89,7 +89,6 @@ export default async function BottlePage({
       <BottleViewHeader
         bottleId={id}
         title={bottle.title}
-        typeIcon={bottleType?.icon ?? "🍾"}
         typeName={bottleType?.name ?? "Bottle"}
         creatorName={creator?.display_name ?? "Sailor"}
         expiresAt={bottle.expires_at}

@@ -6,6 +6,7 @@ import { Coins, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { BottleType } from "@/lib/types";
 import { formatDuration } from "@/lib/geo";
+import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
   bottleTypes: BottleType[];
@@ -105,7 +106,7 @@ export default function DropBottleModal({
                           : "border-slate-100 opacity-50"
                     }`}
                   >
-                    <span className="text-xl">{type.icon}</span>
+                    <BottleImage size="sm" />
                     <p className="font-medium text-sm mt-1 text-slate-900">{type.name}</p>
                     <p className="text-xs text-slate-500">{formatDuration(type.duration_hours)}</p>
                     <p className="text-xs font-medium text-amber-700 mt-1">

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Clock, X } from "lucide-react";
 import type { NearbyBottle } from "@/lib/types";
 import { formatCountdown } from "@/lib/geo";
+import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
   bottle: NearbyBottle;
@@ -24,12 +25,7 @@ export default function BottlePreviewSheet({ bottle, onClose }: Props) {
 
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div
-              className="flex h-11 w-11 items-center justify-center rounded-full text-xl"
-              style={{ backgroundColor: bottle.marker_color }}
-            >
-              {bottle.type_icon}
-            </div>
+            <BottleImage size="md" />
             <div>
               <h2 className="font-semibold text-slate-900">{bottle.title}</h2>
               <p className="text-sm text-slate-500">

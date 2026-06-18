@@ -6,6 +6,7 @@ import { Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { BagItem } from "@/lib/types";
 import Link from "next/link";
+import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
   items: BagItem[];
@@ -60,11 +61,8 @@ export default function BagModal({ items, bagLimit, onClose, onTrashed }: Props)
               className="rounded-lg border border-slate-200 bg-slate-50/50 p-3"
               layout
             >
-              <div
-                className="mx-auto flex h-11 w-11 items-center justify-center rounded-full text-xl mb-2"
-                style={{ backgroundColor: item.marker_color }}
-              >
-                {item.type_icon}
+              <div className="mx-auto mb-2 flex justify-center">
+                <BottleImage size="md" />
               </div>
               <p className="font-medium text-sm text-slate-900 truncate text-center">
                 {item.title}

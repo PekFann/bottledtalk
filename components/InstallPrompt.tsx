@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import BottleImage from "@/components/bottles/BottleImage";
 
 const DISMISS_KEY = "bottledtalk-install-dismissed";
 
@@ -80,8 +81,8 @@ export default function InstallPrompt({ aboveFab = false }: { aboveFab?: boolean
     >
       <div className="mx-auto max-w-lg rounded-2xl glass shadow-2xl border border-white/30 p-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-600 text-xl">
-            🍾
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-100">
+            <BottleImage size="sm" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-slate-900">Add BottledTalk to Home Screen</p>

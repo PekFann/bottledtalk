@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { Backpack, Check, Map } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCountdown, isExpired } from "@/lib/geo";
+import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
   bottleId: string;
   title: string;
-  typeIcon: string;
   typeName: string;
   creatorName: string;
   expiresAt: string;
@@ -60,7 +60,6 @@ function ConfirmDialog({
 export default function BottleViewHeader({
   bottleId,
   title,
-  typeIcon,
   typeName,
   creatorName,
   expiresAt,
@@ -106,12 +105,15 @@ export default function BottleViewHeader({
 
   return (
     <>
-      <header className="flex items-center gap-3 border-b border-teal-200/50 game-panel-pastel px-4 py-3 shrink-0">
+      <header className="flex items-center gap-3 border-b border-sky-200/50 game-panel-pastel px-4 py-3 shrink-0">
         <div className="flex-1 min-w-0">
           <h1 className="font-handwriting text-xl text-slate-800 truncate">{title}</h1>
-          <p className="text-xs text-slate-500">
-            {typeIcon} {typeName} · by {creatorName}
-            {expired ? " · Washed away" : ` · Washes away in ${countdown}`}
+          <p className="text-xs text-slate-500 flex items-center gap-1.5">
+            <BottleImage size="sm" className="inline-block shrink-0" />
+            <span>
+              {typeName} · by {creatorName}
+              {expired ? " · Washed away" : ` · Washes away in ${countdown}`}
+            </span>
           </p>
         </div>
 

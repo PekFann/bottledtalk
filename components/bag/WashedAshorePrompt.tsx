@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import type { WashedAshoreBottle } from "@/lib/types";
+import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
   onCollected: () => void;
@@ -51,13 +52,8 @@ export default function WashedAshorePrompt({ onCollected }: Props) {
       >
         <div className="game-panel-light rounded-2xl p-4 shadow-xl border border-sky-200">
           <p className="text-sm font-bold text-sky-900">Washed ashore</p>
-          <p className="text-sm text-slate-600 mt-1">
-            <span
-              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-sm mr-1 align-middle"
-              style={{ backgroundColor: current.marker_color }}
-            >
-              {current.type_icon}
-            </span>
+          <p className="text-sm text-slate-600 mt-1 flex items-center gap-2">
+            <BottleImage size="sm" className="shrink-0 inline-block" />
             &ldquo;{current.title}&rdquo; expired. Keep it in your bag?
           </p>
           <div className="flex gap-2 mt-3">

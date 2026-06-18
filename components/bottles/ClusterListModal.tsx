@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ChevronRight, X } from "lucide-react";
 import type { NearbyBottle } from "@/lib/types";
 import { formatCountdown } from "@/lib/geo";
+import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
   bottles: NearbyBottle[];
@@ -40,12 +41,7 @@ export default function ClusterListModal({ bottles, onSelect, onClose }: Props) 
                 onClick={() => onSelect(bottle)}
                 className="w-full flex items-center gap-3 rounded-lg border border-slate-100 p-3 text-left hover:bg-slate-50 transition-colors"
               >
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
-                  style={{ backgroundColor: bottle.marker_color }}
-                >
-                  {bottle.type_icon}
-                </div>
+                <BottleImage size="sm" className="shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm text-slate-900 truncate">{bottle.title}</p>
                   <p className="text-xs text-slate-500">

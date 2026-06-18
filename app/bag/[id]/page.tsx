@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { BagMessageSnapshot } from "@/lib/types";
+import BottleImage from "@/components/bottles/BottleImage";
 
 export const dynamic = "force-dynamic";
 
@@ -41,9 +42,12 @@ export default async function BagItemPage({
         </Link>
         <div className="flex-1 min-w-0">
           <h1 className="font-handwriting text-xl text-slate-800 truncate">{item.title}</h1>
-          <p className="text-xs text-slate-500">
-            {item.type_icon} {item.type_name} · saved{" "}
-            {new Date(item.collected_at).toLocaleDateString()}
+          <p className="text-xs text-slate-500 flex items-center gap-1.5">
+            <BottleImage size="sm" className="inline-block shrink-0" />
+            <span>
+              {item.type_name} · saved{" "}
+              {new Date(item.collected_at).toLocaleDateString()}
+            </span>
           </p>
         </div>
       </header>

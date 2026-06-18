@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
   show: boolean;
@@ -32,13 +33,13 @@ export default function CastSplash({ show, capCost, onDone }: Props) {
             exit={{ scale: 0.8, opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 18 }}
           >
-            <motion.span
-              className="text-6xl block mb-4"
+            <motion.div
+              className="mb-4 flex justify-center"
               animate={{ y: [0, -12, 0] }}
               transition={{ repeat: 2, duration: 0.6 }}
             >
-              🍾
-            </motion.span>
+              <BottleImage size="lg" className="h-16 w-16" />
+            </motion.div>
             <p className="text-2xl font-bold text-white">Bottle cast!</p>
             <p className="text-amber-300 font-semibold mt-2">-{capCost} caps</p>
           </motion.div>
