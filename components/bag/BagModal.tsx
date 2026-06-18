@@ -75,7 +75,7 @@ export default function BagModal({ items, bagLimit, onClose, onTrashed }: Props)
               <div className="flex gap-1 mt-3">
                 <Link
                   href={`/bag/${item.id}`}
-                  className="flex-1 text-center rounded-md bg-slate-900 text-white text-xs font-medium py-1.5 hover:bg-slate-800 transition-colors"
+                  className="flex-1 text-center btn-primary text-xs py-1.5"
                 >
                   Open
                 </Link>

@@ -107,13 +107,13 @@ export default async function BottlePage({
           </p>
           <Link
             href="/map"
-            className="mt-6 rounded-lg bg-teal-500 text-white px-5 py-2.5 font-semibold hover:bg-teal-600"
+            className="mt-6 btn-primary px-5 py-2.5"
           >
             Back to map
           </Link>
         </div>
       ) : (
-        <div className="flex flex-col flex-1 min-h-0 paper-panel">
+        <div className="flex flex-col flex-1 min-h-0 conversation-panel">
           <MessageThread
             bottleId={id}
             initialMessages={normalizedMessages}

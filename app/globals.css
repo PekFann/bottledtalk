@@ -62,6 +62,20 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
+.conversation-panel {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.btn-primary {
+  @apply rounded-lg bg-teal-500 text-white font-semibold hover:bg-teal-600 disabled:opacity-50 transition-colors;
+}
+
+.btn-primary-block {
+  @apply rounded-lg bg-teal-500 text-white font-semibold hover:bg-teal-600 disabled:opacity-50 transition-colors w-full text-center py-2.5;
+}
+
 .paper-panel {
   background: rgba(120, 90, 60, 0.5);
   backdrop-filter: blur(16px);

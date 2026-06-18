@@ -112,7 +112,7 @@ export default function InstallPrompt({ aboveFab = false }: { aboveFab?: boolean
         {mode === "chrome" && deferredPrompt && (
           <button
             onClick={handleInstall}
-            className="mt-3 w-full rounded-lg bg-sky-600 text-white font-semibold py-2.5 hover:bg-sky-700 transition-colors"
+            className="mt-3 w-full btn-primary-block"
           >
             Install app
           </button>

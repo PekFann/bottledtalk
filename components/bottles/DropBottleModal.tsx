@@ -161,7 +161,7 @@ export default function DropBottleModal({
           <button
             type="submit"
             disabled={submitting || !selectedTypeId || !canAfford}
-            className="w-full rounded-lg bg-slate-900 text-white font-medium py-3 hover:bg-slate-800 disabled:opacity-50 transition-colors"
+            className="w-full btn-primary-block font-medium py-3"
           >
             {submitting
               ? "Casting into the sea…"

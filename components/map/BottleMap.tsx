@@ -27,6 +27,7 @@ type Props = {
   onSelectBottle: (bottle: NearbyBottle) => void;
   onSelectCluster: (cluster: BottleCluster) => void;
   radiusM: number;
+  selectedBottleId?: string | null;
 };
 
 export default function BottleMap({
@@ -35,6 +36,7 @@ export default function BottleMap({
   onSelectBottle,
   onSelectCluster,
   radiusM,
+  selectedBottleId = null,
 }: Props) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -134,6 +136,7 @@ export default function BottleMap({
           <BottleMarker
             key={m.bottle.id}
             bottle={m.bottle}
+            isSelected={m.bottle.id === selectedBottleId}
             onClick={() => onSelectBottle(m.bottle)}
           />
         ) : (

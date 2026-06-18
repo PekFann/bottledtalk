@@ -155,7 +155,7 @@ export default function MapPage() {
             <p className="text-slate-700 font-medium">{geoError}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 rounded-lg bg-sky-600 text-white px-4 py-2 text-sm font-medium hover:bg-sky-700"
+              className="mt-4 btn-primary px-4 py-2 text-sm"
             >
               Retry
             </button>
@@ -169,6 +169,7 @@ export default function MapPage() {
             onSelectBottle={setSelectedBottle}
             onSelectCluster={(c: BottleCluster) => setClusterBottles(c.bottles)}
             radiusM={DISCOVERY_RADIUS_M}
+            selectedBottleId={selectedBottle?.id ?? null}
           />
 
           {loading && bottles.length === 0 && (

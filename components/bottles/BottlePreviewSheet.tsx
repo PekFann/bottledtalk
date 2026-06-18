@@ -53,7 +53,7 @@ export default function BottlePreviewSheet({ bottle, onClose }: Props) {
 
         <Link
           href={`/bottle/${bottle.id}`}
-          className="mt-4 block w-full rounded-lg bg-slate-900 text-white text-center font-medium py-2.5 hover:bg-slate-800 transition-colors"
+          className="mt-4 block btn-primary-block font-medium"
         >
           Open conversation
         </Link>

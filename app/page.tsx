@@ -28,7 +28,7 @@ export default async function HomePage() {
         {user ? (
           <Link
             href="/map"
-            className="rounded-lg bg-sky-600 text-white px-4 py-2 text-sm font-semibold hover:bg-sky-700"
+            className="btn-primary px-4 py-2 text-sm"
           >
             Open map
           </Link>
@@ -42,7 +42,7 @@ export default async function HomePage() {
             </Link>
             <Link
               href="/signup"
-              className="rounded-lg bg-sky-600 text-white px-4 py-2 text-sm font-semibold hover:bg-sky-700"
+              className="btn-primary px-4 py-2 text-sm"
             >
               Get started
             </Link>
@@ -66,7 +66,7 @@ export default async function HomePage() {
         {!user && (
           <Link
             href="/signup"
-            className="inline-block mt-8 rounded-xl bg-sky-600 text-white px-8 py-3.5 text-lg font-semibold hover:bg-sky-700 shadow-lg"
+            className="inline-block mt-8 btn-primary px-8 py-3.5 text-lg shadow-lg"
           >
             Start bottling messages
           </Link>

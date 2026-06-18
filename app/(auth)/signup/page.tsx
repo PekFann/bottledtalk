@@ -80,7 +80,7 @@ async function SignupForm({
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-sky-600 text-white font-semibold py-2.5 hover:bg-sky-700 transition-colors"
+            className="w-full btn-primary-block"
           >
             Create account
           </button>

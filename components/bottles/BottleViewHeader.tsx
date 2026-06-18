@@ -47,7 +47,7 @@ function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-600 disabled:opacity-50"
+            className="rounded-lg btn-primary px-4 py-2 text-sm disabled:opacity-50"
           >
             {loading ? "…" : confirmLabel}
           </button>

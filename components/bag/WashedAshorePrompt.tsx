@@ -65,7 +65,7 @@ export default function WashedAshorePrompt({ onCollected }: Props) {
               type="button"
               onClick={keep}
               disabled={loading === current.id}
-              className="flex-1 rounded-lg bg-sky-600 text-white text-sm font-semibold py-2 hover:bg-sky-700 disabled:opacity-50"
+              className="flex-1 btn-primary text-sm py-2 disabled:opacity-50"
             >
               Keep in bag
             </button>
