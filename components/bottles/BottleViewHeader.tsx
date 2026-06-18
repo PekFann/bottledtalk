@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Backpack, Check, Map } from "lucide-react";
+import { Backpack, Check, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCountdown, isExpired } from "@/lib/geo";
 import BottleImage from "@/components/bottles/BottleImage";
@@ -105,16 +105,16 @@ export default function BottleViewHeader({
 
   return (
     <>
-      <header className="flex items-center gap-3 border-b border-sky-200/50 game-panel-pastel px-4 py-3 shrink-0">
-        <div className="flex-1 min-w-0">
-          <h1 className="font-handwriting text-xl text-slate-800 truncate">{title}</h1>
-          <p className="text-xs text-slate-500 flex items-center gap-1.5">
-            <BottleImage size="sm" className="inline-block shrink-0" />
-            <span>
+      <header className="flex items-center gap-3 border-b border-sky-200/50 game-panel-pastel px-4 py-4 shrink-0">
+        <div className="flex flex-1 min-w-0 items-center gap-3">
+          <BottleImage size="xl" className="shrink-0" />
+          <div className="min-w-0">
+            <h1 className="font-handwriting text-2xl text-slate-800 truncate">{title}</h1>
+            <p className="text-sm text-slate-500">
               {typeName} · by {creatorName}
               {expired ? " · Washed away" : ` · Washes away in ${countdown}`}
-            </span>
-          </p>
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
@@ -123,13 +123,13 @@ export default function BottleViewHeader({
               type="button"
               onClick={() => !inBag && setShowBagConfirm(true)}
               disabled={inBag}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-default transition-colors"
+              className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-default transition-colors"
               aria-label={inBag ? "Already in bag" : "Keep in bag"}
             >
               {inBag ? (
-                <Check className="h-4 w-4 text-emerald-600" strokeWidth={2.25} />
+                <Check className="h-6 w-6 text-emerald-600" strokeWidth={2.25} />
               ) : (
-                <Backpack className="h-4 w-4" strokeWidth={2.25} />
+                <Backpack className="h-6 w-6" strokeWidth={2.25} />
               )}
             </button>
           )}
@@ -137,10 +137,10 @@ export default function BottleViewHeader({
           <button
             type="button"
             onClick={() => setShowExitConfirm(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
             aria-label="Return to map"
           >
-            <Map className="h-4 w-4" strokeWidth={2.25} />
+            <X className="h-6 w-6" strokeWidth={2.5} />
           </button>
         </div>
       </header>
