@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox";
-import type { MapEvent } from "react-map-gl/mapbox";
+import type { MapEvent, MapRef, ViewStateChangeEvent } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { NearbyBottle, BottleCluster } from "@/lib/types";
 import { CLUSTER_RADIUS_M } from "@/lib/types";
@@ -10,6 +10,14 @@ import {
   createDiscoveryCircleGeoJSON,
   createDiscoveryMaskGeoJSON,
 } from "@/lib/geo";
+import {
+  adjustCenterToKeepUserVisible,
+  getBoundsAroundPoint,
+  MAP_BOUNDS_RADIUS_MULTIPLIER,
+  MAP_MIN_ZOOM_PADDING_PX,
+  MAP_MIN_ZOOM_RADIUS_MULTIPLIER,
+  MAP_USER_VISIBLE_MARGIN_PX,
+} from "@/lib/mapConstraints";
 import { clusterBottles } from "@/lib/clusterBottles";
 import { applyGreyRoadColors } from "@/lib/mapRoadColors";
 import BottleMarker from "@/components/bottles/BottleMarker";
@@ -21,6 +29,18 @@ const DISCOVERY_OUTLINE = "#64748b";
 const DISCOVERY_MASK_FILL = "#6b7280";
 const USER_PIN = "#3b82f6";
 
+const INITIAL_PITCH = 45;
+const INITIAL_BEARING = -15;
+const INITIAL_ZOOM = 14;
+
+type ViewState = {
+  longitude: number;
+  latitude: number;
+  zoom: number;
+  pitch: number;
+  bearing: number;
+};
+
 type Props = {
   userLocation: { lat: number; lng: number };
   bottles: NearbyBottle[];
@@ -29,6 +49,16 @@ type Props = {
   radiusM: number;
   selectedBottleId?: string | null;
 };
+
+function createInitialViewState(userLocation: { lat: number; lng: number }): ViewState {
+  return {
+    longitude: userLocation.lng,
+    latitude: userLocation.lat,
+    zoom: INITIAL_ZOOM,
+    pitch: INITIAL_PITCH,
+    bearing: INITIAL_BEARING,
+  };
+}
 
 export default function BottleMap({
   userLocation,
@@ -39,6 +69,20 @@ export default function BottleMap({
   selectedBottleId = null,
 }: Props) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  const mapRef = useRef<MapRef>(null);
+  const [viewState, setViewState] = useState<ViewState>(() =>
+    createInitialViewState(userLocation)
+  );
+
+  const maxBounds = useMemo(
+    () =>
+      getBoundsAroundPoint(
+        userLocation.lng,
+        userLocation.lat,
+        radiusM * MAP_BOUNDS_RADIUS_MULTIPLIER
+      ),
+    [userLocation.lng, userLocation.lat, radiusM]
+  );
 
   const circleGeoJSON = useMemo(
     () => createDiscoveryCircleGeoJSON(userLocation.lng, userLocation.lat, radiusM),
@@ -55,22 +99,80 @@ export default function BottleMap({
     [bottles]
   );
 
-  const mapStyle = MAP_STYLE;
+  useEffect(() => {
+    setViewState(createInitialViewState(userLocation));
 
-  const handleMapLoad = useCallback((e: MapEvent) => {
-    const map = e.target;
-    if (!map.getSource("mapbox-dem")) {
-      map.addSource("mapbox-dem", {
-        type: "raster-dem",
-        url: "mapbox://mapbox.mapbox-terrain-dem-v1",
-        tileSize: 512,
-        maxzoom: 14,
-      });
-      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.0 });
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+
+    const bounds = getBoundsAroundPoint(
+      userLocation.lng,
+      userLocation.lat,
+      radiusM * MAP_MIN_ZOOM_RADIUS_MULTIPLIER
+    );
+    const camera = map.cameraForBounds(bounds, { padding: MAP_MIN_ZOOM_PADDING_PX });
+    if (camera?.zoom != null) {
+      map.setMinZoom(camera.zoom);
     }
-    applyGreyRoadColors(map);
-    map.once("style.load", () => applyGreyRoadColors(map));
-  }, []);
+  }, [userLocation, radiusM]);
+
+  const applyMinZoom = useCallback(
+    (map: MapEvent["target"]) => {
+      const bounds = getBoundsAroundPoint(
+        userLocation.lng,
+        userLocation.lat,
+        radiusM * MAP_MIN_ZOOM_RADIUS_MULTIPLIER
+      );
+      const camera = map.cameraForBounds(bounds, { padding: MAP_MIN_ZOOM_PADDING_PX });
+      if (camera?.zoom != null) {
+        map.setMinZoom(camera.zoom);
+      }
+    },
+    [userLocation.lng, userLocation.lat, radiusM]
+  );
+
+  const handleMapLoad = useCallback(
+    (e: MapEvent) => {
+      const map = e.target;
+      if (!map.getSource("mapbox-dem")) {
+        map.addSource("mapbox-dem", {
+          type: "raster-dem",
+          url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+          tileSize: 512,
+          maxzoom: 14,
+        });
+        map.setTerrain({ source: "mapbox-dem", exaggeration: 1.0 });
+      }
+      applyGreyRoadColors(map);
+      map.once("style.load", () => applyGreyRoadColors(map));
+      applyMinZoom(map);
+    },
+    [applyMinZoom]
+  );
+
+  const handleMove = useCallback(
+    (evt: ViewStateChangeEvent) => {
+      const { zoom, pitch, bearing } = evt.viewState;
+      let { longitude, latitude } = evt.viewState;
+      const map = mapRef.current?.getMap();
+
+      if (map) {
+        const adjusted = adjustCenterToKeepUserVisible(
+          map,
+          userLocation.lng,
+          userLocation.lat,
+          MAP_USER_VISIBLE_MARGIN_PX
+        );
+        if (adjusted) {
+          longitude = adjusted.lng;
+          latitude = adjusted.lat;
+        }
+      }
+
+      setViewState({ longitude, latitude, zoom, pitch, bearing });
+    },
+    [userLocation.lng, userLocation.lat]
+  );
 
   if (!token) {
     return (
@@ -82,18 +184,16 @@ export default function BottleMap({
 
   return (
     <Map
+      ref={mapRef}
       mapboxAccessToken={token}
-      initialViewState={{
-        longitude: userLocation.lng,
-        latitude: userLocation.lat,
-        zoom: 14,
-        pitch: 45,
-        bearing: -15,
-      }}
+      {...viewState}
+      maxBounds={maxBounds}
+      maxZoom={18}
       maxPitch={85}
       style={{ width: "100%", height: "100%" }}
-      mapStyle={mapStyle}
+      mapStyle={MAP_STYLE}
       onLoad={handleMapLoad}
+      onMove={handleMove}
     >
       <Source id="discovery-mask" type="geojson" data={maskGeoJSON}>
         <Layer
