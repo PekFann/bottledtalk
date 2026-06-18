@@ -137,7 +137,7 @@ export default function BottleViewHeader({
           <button
             type="button"
             onClick={() => setShowExitConfirm(true)}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+            className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
             aria-label="Return to map"
           >
             <X className="h-6 w-6" strokeWidth={2.5} />
