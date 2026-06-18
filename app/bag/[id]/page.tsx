@@ -48,20 +48,21 @@ export default async function BagItemPage({
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 bg-white/60">
+      <div className="flex-1 overflow-y-auto px-4 py-4 paper-panel">
         {messages.length === 0 ? (
-          <p className="text-center text-slate-500 text-sm py-8">No messages saved</p>
+          <p className="text-center text-white/60 text-sm py-8">No messages saved</p>
         ) : (
           messages.map((msg, i) => (
             <article
               key={i}
-              className="border-b border-slate-200/80 pb-4 mb-4 last:border-0 last:mb-0"
+              className="border-b border-white/20 pb-4 mb-4 last:border-0 last:mb-0"
             >
-              <p className="text-xs text-slate-500 mb-1.5">
-                {msg.author_name} · {new Date(msg.created_at).toLocaleString()}
-              </p>
-              <p className="font-handwriting text-lg text-slate-800 whitespace-pre-wrap leading-relaxed">
-                {msg.body}
+              <p className="text-lg text-paper-ink whitespace-pre-wrap leading-relaxed">
+                <span className="text-white/90">{msg.author_name}:</span>{" "}
+                {msg.body}{" "}
+                <span className="text-xs text-white/60 align-baseline">
+                  {new Date(msg.created_at).toLocaleString()}
+                </span>
               </p>
             </article>
           ))

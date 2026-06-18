@@ -40,7 +40,7 @@ export default function UserMenu({ displayName, email }: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-100 border border-slate-200 text-slate-700 hover:bg-sky-200 transition-colors"
+        className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/40 backdrop-blur-md border border-white/30 text-slate-700 hover:bg-white/55 transition-colors"
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Menu"

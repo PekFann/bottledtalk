@@ -9,7 +9,7 @@ export default async function LoginPage({
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-100 to-blue-50 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl p-8">
+      <div className="w-full max-w-md rounded-2xl glass shadow-xl p-8">
         <div className="text-center mb-8">
           <span className="text-4xl">🍾</span>
           <h1 className="text-2xl font-bold text-sky-900 mt-2">BottledTalk</h1>

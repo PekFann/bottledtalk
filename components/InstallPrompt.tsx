@@ -78,7 +78,7 @@ export default function InstallPrompt({ aboveFab = false }: { aboveFab?: boolean
         aboveFab ? "bottom-36" : "bottom-0"
       }`}
     >
-      <div className="mx-auto max-w-lg rounded-2xl bg-white shadow-2xl border border-sky-100 p-4">
+      <div className="mx-auto max-w-lg rounded-2xl glass shadow-2xl border border-white/30 p-4">
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-600 text-xl">
             🍾

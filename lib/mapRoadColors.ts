@@ -1,7 +1,7 @@
 import type { Map as MapboxMap } from "mapbox-gl";
 
-const HIGHWAY_COLOR = "#6b7280";
-const HIGHWAY_CASE_COLOR = "#9ca3af";
+const HIGHWAY_COLOR = "#8991a0";
+const HIGHWAY_CASE_COLOR = "#b0b5bf";
 const LIGHT_ROAD_COLOR = "#e5e7eb";
 
 const SKIP_PATTERNS = ["label", "rail", "path", "pedestrian", "steps"];

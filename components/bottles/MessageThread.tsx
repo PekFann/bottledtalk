@@ -91,14 +91,14 @@ export default function MessageThread({
         {messages.map((msg) => (
           <article
             key={msg.id}
-            className="border-b border-slate-200/80 pb-4 mb-4 last:border-0 last:mb-0"
+            className="border-b border-white/20 pb-4 mb-4 last:border-0 last:mb-0"
           >
-            <p className="font-handwriting text-lg text-slate-800 whitespace-pre-wrap leading-relaxed">
-              <span className="text-slate-600">
+            <p className="text-lg text-paper-ink whitespace-pre-wrap leading-relaxed">
+              <span className="text-white/90">
                 {msg.author?.display_name ?? "Sailor"}:
               </span>{" "}
               {msg.body}{" "}
-              <span className="text-xs text-slate-400 font-sans align-baseline">
+              <span className="text-xs text-white/60 align-baseline">
                 {new Date(msg.created_at).toLocaleString()}
               </span>
             </p>
@@ -108,13 +108,13 @@ export default function MessageThread({
       </div>
 
       {isExpired ? (
-        <div className="border-t border-slate-200 bg-slate-50 px-4 py-4 text-center text-sm text-slate-500">
+        <div className="border-t border-white/20 bg-white/10 backdrop-blur-md px-4 py-4 text-center text-sm text-white/70">
           This bottle has washed away. The conversation is closed.
         </div>
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="border-t border-slate-200 bg-white/80 px-4 py-3 space-y-2"
+          className="border-t border-white/20 bg-white/10 backdrop-blur-md px-4 py-3 space-y-2"
         >
           <textarea
             value={body}
@@ -122,13 +122,13 @@ export default function MessageThread({
             maxLength={1000}
             rows={3}
             placeholder="Continue the conversation…"
-            className="font-handwriting w-full rounded-lg border border-slate-200 px-4 py-2.5 text-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-400/50 resize-none game-input"
+            className="w-full rounded-lg border border-white/25 bg-white/10 backdrop-blur-sm px-4 py-2.5 text-lg text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 resize-none game-input"
           />
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={submitting || !body.trim()}
-              className="rounded-lg bg-teal-500 text-white px-5 py-2 text-sm font-semibold hover:bg-teal-600 disabled:opacity-50"
+              className="rounded-lg bg-teal-500/90 text-white px-5 py-2 text-sm hover:bg-teal-600 disabled:opacity-50 backdrop-blur-sm"
             >
               Send
             </button>
@@ -137,7 +137,7 @@ export default function MessageThread({
       )}
 
       {error && (
-        <p className="px-4 pb-3 text-sm text-red-600">{error}</p>
+        <p className="px-4 pb-3 text-sm text-red-200">{error}</p>
       )}
     </div>
   );

@@ -95,7 +95,7 @@ export default async function HomePage() {
           />
         </div>
 
-        <div className="mt-16 rounded-2xl bg-white/80 shadow-sm p-6 sm:p-8 text-left max-w-2xl mx-auto">
+        <div className="mt-16 rounded-2xl glass p-6 sm:p-8 text-left max-w-2xl mx-auto">
           <h2 className="font-bold text-slate-900 text-lg mb-4">Bottle types &amp; costs</h2>
           <ul className="space-y-3">
             <BottleTypeRow icon="🍾" name="Glass" duration="24 hours" caps={10} color="#60a5fa" />
@@ -125,7 +125,7 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl bg-white/80 p-6 shadow-sm">
+    <div className="rounded-2xl glass p-6 shadow-sm">
       <span className="text-3xl">{icon}</span>
       <h3 className="font-bold text-slate-900 mt-3">{title}</h3>
       <p className="text-sm text-slate-600 mt-2">{description}</p>
