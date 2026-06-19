@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Backpack, Check, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -11,6 +12,7 @@ type Props = {
   bottleId: string;
   title: string;
   typeName: string;
+  creatorId?: string;
   creatorName: string;
   expiresAt: string;
   participated: boolean;
@@ -61,6 +63,7 @@ export default function BottleViewHeader({
   bottleId,
   title,
   typeName,
+  creatorId,
   creatorName,
   expiresAt,
   participated,
@@ -111,7 +114,14 @@ export default function BottleViewHeader({
           <div className="min-w-0">
             <h1 className="font-handwriting text-2xl text-slate-800 truncate">{title}</h1>
             <p className="text-sm text-slate-500">
-              {typeName} · by {creatorName}
+              {typeName} · by{" "}
+              {creatorId ? (
+                <Link href={`/profile/${creatorId}`} className="hover:text-sky-600 hover:underline">
+                  {creatorName}
+                </Link>
+              ) : (
+                creatorName
+              )}
               {expired ? " · Washed away" : ` · Washes away in ${countdown}`}
             </p>
           </div>

@@ -2,13 +2,15 @@
 
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { Backpack, Send } from "lucide-react";
+import { Backpack, Footprints, Store, Users } from "lucide-react";
 
 type Props = {
   bagUsed: number;
   bagLimit: number;
-  onCast: () => void;
+  onOpenFriends: () => void;
+  onOpenShop: () => void;
   onOpenBag: () => void;
+  onOpenFootprints: () => void;
 };
 
 function ActionButton({
@@ -45,20 +47,24 @@ function ActionButton({
 export default function MapActionBar({
   bagUsed,
   bagLimit,
-  onCast,
+  onOpenFriends,
+  onOpenShop,
   onOpenBag,
+  onOpenFootprints,
 }: Props) {
   return (
-    <div className="absolute bottom-12 right-4 z-20 flex flex-col items-center gap-4 pb-[max(0px,env(safe-area-inset-bottom))]">
-      <ActionButton label="Cast bottle" onClick={onCast} variant="primary">
-        <Send className="h-5 w-5" strokeWidth={2.25} />
+    <div className="absolute bottom-12 right-4 z-20 flex flex-col items-center gap-3 pb-[max(0px,env(safe-area-inset-bottom))]">
+      <ActionButton label="Friends" onClick={onOpenFriends} variant="secondary">
+        <Users className="h-5 w-5" strokeWidth={2.25} />
       </ActionButton>
-      <ActionButton
-        label={`Bag ${bagUsed}/${bagLimit}`}
-        onClick={onOpenBag}
-        variant="secondary"
-      >
+      <ActionButton label="Shop" onClick={onOpenShop} variant="primary">
+        <Store className="h-5 w-5" strokeWidth={2.25} />
+      </ActionButton>
+      <ActionButton label={`Bag ${bagUsed}/${bagLimit}`} onClick={onOpenBag} variant="secondary">
         <Backpack className="h-5 w-5" strokeWidth={2.25} />
+      </ActionButton>
+      <ActionButton label="Footprint" onClick={onOpenFootprints} variant="secondary">
+        <Footprints className="h-5 w-5" strokeWidth={2.25} />
       </ActionButton>
     </div>
   );

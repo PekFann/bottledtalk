@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox";
 import type { MapEvent, MapRef, ViewStateChangeEvent } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { NearbyBottle, BottleCluster } from "@/lib/types";
+import type { NearbyBottle, BottleCluster, SignalTower } from "@/lib/types";
 import { CLUSTER_RADIUS_M } from "@/lib/types";
 import {
   createDiscoveryCircleGeoJSON,
@@ -23,6 +23,8 @@ import { clusterBottles } from "@/lib/clusterBottles";
 import { applyGreyRoadColors } from "@/lib/mapRoadColors";
 import BottleMarker from "@/components/bottles/BottleMarker";
 import ClusterMarker from "@/components/bottles/ClusterMarker";
+import SignalTowerMarker from "@/components/map/SignalTowerMarker";
+import { Footprints } from "lucide-react";
 
 const MAP_STYLE = "mapbox://styles/mapbox/outdoors-v12";
 
@@ -44,9 +46,14 @@ type ViewState = {
 
 type Props = {
   userLocation: { lat: number; lng: number };
+  anchorLocation: { lat: number; lng: number };
   bottles: NearbyBottle[];
+  towers?: SignalTower[];
+  currentUserId?: string;
+  footprintMode?: boolean;
   onSelectBottle: (bottle: NearbyBottle) => void;
   onSelectCluster: (cluster: BottleCluster) => void;
+  onSelectTower?: (tower: SignalTower) => void;
   radiusM: number;
   selectedBottleId?: string | null;
 };
@@ -94,26 +101,31 @@ function applyPanConstraints(
 
 export default function BottleMap({
   userLocation,
+  anchorLocation,
   bottles,
+  towers = [],
+  currentUserId,
+  footprintMode = false,
   onSelectBottle,
   onSelectCluster,
+  onSelectTower,
   radiusM,
   selectedBottleId = null,
 }: Props) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const mapRef = useRef<MapRef>(null);
   const [viewState, setViewState] = useState<ViewState>(() =>
-    createInitialViewState(userLocation)
+    createInitialViewState(anchorLocation)
   );
 
   const circleGeoJSON = useMemo(
-    () => createDiscoveryCircleGeoJSON(userLocation.lng, userLocation.lat, radiusM),
-    [userLocation.lng, userLocation.lat, radiusM]
+    () => createDiscoveryCircleGeoJSON(anchorLocation.lng, anchorLocation.lat, radiusM),
+    [anchorLocation.lng, anchorLocation.lat, radiusM]
   );
 
   const maskGeoJSON = useMemo(
-    () => createDiscoveryMaskGeoJSON(userLocation.lng, userLocation.lat, radiusM),
-    [userLocation.lng, userLocation.lat, radiusM]
+    () => createDiscoveryMaskGeoJSON(anchorLocation.lng, anchorLocation.lat, radiusM),
+    [anchorLocation.lng, anchorLocation.lat, radiusM]
   );
 
   const markers = useMemo(
@@ -124,8 +136,8 @@ export default function BottleMap({
   const applyMinZoom = useCallback(
     (map: MapEvent["target"]) => {
       const bounds = getBoundsAroundPoint(
-        userLocation.lng,
-        userLocation.lat,
+        anchorLocation.lng,
+        anchorLocation.lat,
         radiusM * MAP_MIN_ZOOM_RADIUS_MULTIPLIER
       );
       const camera = map.cameraForBounds(bounds, { padding: MAP_MIN_ZOOM_PADDING_PX });
@@ -133,14 +145,14 @@ export default function BottleMap({
         map.setMinZoom(camera.zoom);
       }
     },
-    [userLocation.lng, userLocation.lat, radiusM]
+    [anchorLocation.lng, anchorLocation.lat, radiusM]
   );
 
   useEffect(() => {
-    setViewState(createInitialViewState(userLocation));
+    setViewState(createInitialViewState(anchorLocation));
     const map = mapRef.current?.getMap();
     if (map) applyMinZoom(map);
-  }, [userLocation, radiusM, applyMinZoom]);
+  }, [anchorLocation, radiusM, applyMinZoom]);
 
   const handleMapLoad = useCallback(
     (e: MapEvent) => {
@@ -174,7 +186,7 @@ export default function BottleMap({
     const corrected = applyPanConstraints(
       center.lng,
       center.lat,
-      userLocation,
+      anchorLocation,
       radiusM,
       map
     );
@@ -191,7 +203,7 @@ export default function BottleMap({
         bearing: map.getBearing(),
       });
     }
-  }, [userLocation, radiusM]);
+  }, [anchorLocation, radiusM]);
 
   if (!token) {
     return (
@@ -238,6 +250,14 @@ export default function BottleMap({
         />
       </Source>
 
+      {footprintMode && (
+        <Marker longitude={anchorLocation.lng} latitude={anchorLocation.lat} anchor="center">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 border-2 border-white shadow-lg">
+            <Footprints className="h-4 w-4 text-white" />
+          </div>
+        </Marker>
+      )}
+
       <Marker longitude={userLocation.lng} latitude={userLocation.lat} anchor="center">
         <div className="relative">
           <div
@@ -249,6 +269,15 @@ export default function BottleMap({
           />
         </div>
       </Marker>
+
+      {towers.map((tower) => (
+        <SignalTowerMarker
+          key={tower.id}
+          tower={tower}
+          isOwner={tower.owner_id === currentUserId}
+          onClick={() => onSelectTower?.(tower)}
+        />
+      ))}
 
       {markers.map((m) =>
         m.kind === "single" ? (

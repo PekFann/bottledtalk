@@ -2,18 +2,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isExpired } from "@/lib/geo";
-import MessageThread from "@/components/bottles/MessageThread";
 import BottleViewHeader from "@/components/bottles/BottleViewHeader";
+import BottleConversation from "@/components/bottles/BottleConversation";
 import type { Message } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function BottlePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ footprint?: string }>;
 }) {
   const { id } = await params;
+  const { footprint: footprintId } = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -29,9 +32,11 @@ export default async function BottlePage({
       id,
       creator_id,
       title,
+      description,
+      is_sealed,
       expires_at,
       created_at,
-      bottle_type:bottle_types (id, slug, name, description, duration_hours, icon, marker_color),
+      bottle_type:bottle_types (id, slug, name, description, duration_hours, icon, marker_color, is_sealed),
       creator:profiles!bottles_creator_id_fkey (id, display_name, avatar_url, created_at)
     `
     )
@@ -40,20 +45,47 @@ export default async function BottlePage({
 
   if (!bottle) notFound();
 
-  const { data: messages } = await supabase
-    .from("messages")
-    .select(
+  const isCreator = bottle.creator_id === user.id;
+  let isUnlocked = isCreator || !bottle.is_sealed;
+
+  if (bottle.is_sealed && !isCreator) {
+    const { data: unlock } = await supabase
+      .from("bottle_unlocks")
+      .select("bottle_id")
+      .eq("bottle_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (unlock) isUnlocked = true;
+  }
+
+  let messages: Message[] = [];
+  if (isUnlocked) {
+    const { data: msgData } = await supabase
+      .from("messages")
+      .select(
+        `
+        id,
+        bottle_id,
+        author_id,
+        body,
+        created_at,
+        is_remote,
+        author:profiles!messages_author_id_fkey (id, display_name, avatar_url, created_at)
       `
-      id,
-      bottle_id,
-      author_id,
-      body,
-      created_at,
-      author:profiles!messages_author_id_fkey (id, display_name, avatar_url, created_at)
-    `
-    )
-    .eq("bottle_id", id)
-    .order("created_at", { ascending: true });
+      )
+      .eq("bottle_id", id)
+      .order("created_at", { ascending: true });
+
+    messages = (msgData ?? []).map((m) => ({
+      id: m.id,
+      bottle_id: m.bottle_id,
+      author_id: m.author_id,
+      body: m.body,
+      created_at: m.created_at,
+      is_remote: m.is_remote,
+      author: Array.isArray(m.author) ? m.author[0] : m.author ?? undefined,
+    }));
+  }
 
   let bagRow: { id: string } | null = null;
   const { data: bagData, error: bagError } = await supabase
@@ -73,16 +105,7 @@ export default async function BottlePage({
 
   const participated =
     bottle.creator_id === user.id ||
-    (messages ?? []).some((m) => m.author_id === user.id);
-
-  const normalizedMessages: Message[] = (messages ?? []).map((m) => ({
-    id: m.id,
-    bottle_id: m.bottle_id,
-    author_id: m.author_id,
-    body: m.body,
-    created_at: m.created_at,
-    author: Array.isArray(m.author) ? m.author[0] : m.author ?? undefined,
-  }));
+    messages.some((m) => m.author_id === user.id);
 
   return (
     <div className="flex flex-col h-dvh game-map-bg">
@@ -90,6 +113,7 @@ export default async function BottlePage({
         bottleId={id}
         title={bottle.title}
         typeName={bottleType?.name ?? "Bottle"}
+        creatorId={creator?.id}
         creatorName={creator?.display_name ?? "Sailor"}
         expiresAt={bottle.expires_at}
         participated={participated}
@@ -104,22 +128,22 @@ export default async function BottlePage({
           <p className="text-slate-500 mt-2 text-sm">
             Keep it in your bag to save the conversation.
           </p>
-          <Link
-            href="/map"
-            className="mt-6 btn-primary px-5 py-2.5"
-          >
+          <Link href="/map" className="mt-6 btn-primary px-5 py-2.5">
             Back to map
           </Link>
         </div>
       ) : (
-        <div className="flex flex-col flex-1 min-h-0 conversation-panel">
-          <MessageThread
-            bottleId={id}
-            initialMessages={normalizedMessages}
-            currentUserId={user.id}
-            isExpired={false}
-          />
-        </div>
+        <BottleConversation
+          bottleId={id}
+          title={bottle.title}
+          description={bottle.description}
+          isSealed={!!bottle.is_sealed}
+          isCreator={isCreator}
+          isUnlocked={isUnlocked}
+          initialMessages={messages}
+          currentUserId={user.id}
+          footprintId={footprintId ?? null}
+        />
       )}
     </div>
   );

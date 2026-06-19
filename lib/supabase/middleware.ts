@@ -33,7 +33,8 @@ export async function updateSession(request: NextRequest) {
   const isProtected =
     pathname.startsWith("/map") ||
     pathname.startsWith("/bottle") ||
-    pathname.startsWith("/bag");
+    pathname.startsWith("/bag") ||
+    pathname.startsWith("/profile");
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/signup");
 

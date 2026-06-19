@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Footprints } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Message } from "@/lib/types";
 
@@ -9,13 +11,16 @@ type Props = {
   initialMessages: Message[];
   currentUserId: string;
   isExpired: boolean;
+  footprintId?: string | null;
+  userLocation?: { lat: number; lng: number } | null;
 };
 
 export default function MessageThread({
   bottleId,
   initialMessages,
-  currentUserId,
   isExpired,
+  footprintId,
+  userLocation,
 }: Props) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [body, setBody] = useState("");
@@ -69,16 +74,18 @@ export default function MessageThread({
     setError(null);
 
     const supabase = getSupabase();
-    const { error: insertError } = await supabase.from("messages").insert({
-      bottle_id: bottleId,
-      author_id: currentUserId,
-      body: body.trim(),
+    const { error: rpcError } = await supabase.rpc("post_message", {
+      p_bottle_id: bottleId,
+      p_body: body.trim(),
+      p_footprint_id: footprintId ?? null,
+      p_user_lat: userLocation?.lat ?? null,
+      p_user_lng: userLocation?.lng ?? null,
     });
 
     setSubmitting(false);
 
-    if (insertError) {
-      setError(insertError.message);
+    if (rpcError) {
+      setError(rpcError.message);
       return;
     }
 
@@ -94,8 +101,18 @@ export default function MessageThread({
             className="border-b border-slate-200/80 pb-4 mb-4 last:border-0 last:mb-0"
           >
             <p className="text-lg text-slate-800 whitespace-pre-wrap leading-relaxed">
-              <span className="text-slate-600">
-                {msg.author?.display_name ?? "Sailor"}:
+              <span className="text-slate-600 inline-flex items-center gap-1">
+                {msg.author_id ? (
+                  <Link href={`/profile/${msg.author_id}`} className="hover:text-sky-600 hover:underline">
+                    {msg.author?.display_name ?? "Sailor"}
+                  </Link>
+                ) : (
+                  msg.author?.display_name ?? "Sailor"
+                )}
+                {msg.is_remote && (
+                  <Footprints className="h-3.5 w-3.5 text-amber-600 shrink-0" aria-label="Remote comment" />
+                )}
+                :
               </span>{" "}
               {msg.body}{" "}
               <span className="text-xs text-slate-400 align-baseline">

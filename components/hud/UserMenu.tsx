@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { LogOut, Menu, User } from "lucide-react";
 
 type Props = {
   displayName: string | null;
   email: string | null;
+  userId: string | null;
 };
 
-export default function UserMenu({ displayName, email }: Props) {
+export default function UserMenu({ displayName, email, userId }: Props) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -57,16 +59,27 @@ export default function UserMenu({ displayName, email }: Props) {
             {label}
           </p>
 
-          <button
-            type="button"
-            role="menuitem"
-            disabled
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed"
-          >
-            <User className="h-4 w-4 shrink-0" />
-            Profile
-            <span className="ml-auto text-[10px] uppercase tracking-wide">Soon</span>
-          </button>
+          {userId ? (
+            <Link
+              href={`/profile/${userId}`}
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-sky-50 transition-colors"
+            >
+              <User className="h-4 w-4 shrink-0" />
+              Profile
+            </Link>
+          ) : (
+            <button
+              type="button"
+              role="menuitem"
+              disabled
+              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed"
+            >
+              <User className="h-4 w-4 shrink-0" />
+              Profile
+            </button>
+          )}
 
           <div className="my-1 border-t border-slate-200/80" />
 

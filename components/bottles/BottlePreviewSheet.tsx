@@ -10,9 +10,13 @@ import BottleImage from "@/components/bottles/BottleImage";
 type Props = {
   bottle: NearbyBottle;
   onClose: () => void;
+  footprintId?: string;
 };
 
-export default function BottlePreviewSheet({ bottle, onClose }: Props) {
+export default function BottlePreviewSheet({ bottle, onClose, footprintId }: Props) {
+  const href = footprintId
+    ? `/bottle/${bottle.id}?footprint=${footprintId}`
+    : `/bottle/${bottle.id}`;
   return (
     <div className="absolute inset-x-0 bottom-0 z-30 px-4 pb-36 sm:pb-6">
       <motion.div
@@ -47,10 +51,7 @@ export default function BottlePreviewSheet({ bottle, onClose }: Props) {
           Washes away in {formatCountdown(bottle.expires_at)}
         </p>
 
-        <Link
-          href={`/bottle/${bottle.id}`}
-          className="mt-4 block btn-primary-block font-medium"
-        >
+        <Link href={href} className="mt-4 block btn-primary-block font-medium">
           Open conversation
         </Link>
       </motion.div>
