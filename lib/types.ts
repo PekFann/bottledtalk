@@ -65,6 +65,34 @@ export type BottleWithType = Bottle & {
   creator: Profile;
 };
 
+export type BottleThreadResponse = {
+  bottle: {
+    id: string;
+    creator_id: string;
+    title: string;
+    description: string | null;
+    is_sealed: boolean;
+    expires_at: string;
+    created_at: string;
+  };
+  bottle_type: {
+    id: string;
+    slug: string;
+    name: string;
+    description: string;
+    duration_hours: number;
+    icon: string;
+    marker_color: string;
+    is_sealed: boolean;
+  };
+  creator: Profile;
+  is_creator: boolean;
+  is_unlocked: boolean;
+  messages: Message[];
+  already_in_bag: boolean;
+  participated: boolean;
+};
+
 export type BagMessageSnapshot = {
   author_name: string;
   body: string;
@@ -95,17 +123,21 @@ export type WashedAshoreBottle = {
   marker_color: string;
 };
 
-export type BottleCluster = {
+export type MapStackItem =
+  | { kind: "bottle"; bottle: NearbyBottle }
+  | { kind: "tower"; tower: SignalTower };
+
+export type MapStack = {
   id: string;
   lat: number;
   lng: number;
   count: number;
-  bottles: NearbyBottle[];
+  items: MapStackItem[];
 };
 
 export type MapMarker =
-  | { kind: "single"; bottle: NearbyBottle }
-  | { kind: "cluster"; cluster: BottleCluster };
+  | { kind: "single"; item: MapStackItem }
+  | { kind: "cluster"; stack: MapStack };
 
 export type SignalTower = {
   id: string;
@@ -153,7 +185,7 @@ export const DISCOVERY_RADIUS_M = 2000;
 export const TOWER_BOOST_RADIUS_M = 5000;
 export const TOWER_PROXIMITY_M = 1000;
 export const FOOTPRINT_RADIUS_M = 2000;
-export const CLUSTER_RADIUS_M = 30;
+export const CLUSTER_RADIUS_M = 60;
 export const STARTER_CAPS = 100;
 export const DEFAULT_BAG_SLOTS = 10;
 

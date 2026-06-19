@@ -2,32 +2,48 @@
 
 import { Marker } from "react-map-gl/mapbox";
 import { motion } from "framer-motion";
+import type { MouseEvent } from "react";
 import type { NearbyBottle } from "@/lib/types";
+import { useLiveCountdown } from "@/lib/hooks/useLiveCountdown";
 import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
   bottle: NearbyBottle;
-  onClick: () => void;
+  onClick: (e: MouseEvent) => void;
   isSelected?: boolean;
 };
 
 export default function BottleMarker({ bottle, onClick, isSelected = false }: Props) {
+  const countdown = useLiveCountdown(bottle.expires_at);
+
   return (
     <Marker longitude={bottle.lng} latitude={bottle.lat} anchor="bottom">
       <button
-        onClick={onClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick(e);
+        }}
         className="relative flex flex-col items-center cursor-pointer group border-0 bg-transparent p-0"
         aria-label={`Open bottle: ${bottle.title}`}
         aria-pressed={isSelected}
       >
         <div
-          className={`mb-1 max-w-[80px] truncate rounded px-1.5 py-0.5 text-[10px] shadow transition-colors ${
+          className={`relative mb-1 max-w-[96px] rounded-lg px-2 py-1 text-center shadow-md transition-colors ${
             isSelected
-              ? "bg-white/90 backdrop-blur-sm text-slate-800 font-medium"
-              : "bg-white/45 backdrop-blur-sm text-slate-700"
+              ? "bg-white/95 backdrop-blur-sm text-slate-800"
+              : "bg-white/90 backdrop-blur-sm text-slate-700"
           }`}
         >
-          {bottle.title}
+          <p className={`truncate text-[10px] leading-tight ${isSelected ? "font-semibold" : "font-medium"}`}>
+            {bottle.title}
+          </p>
+          <p className="mt-0.5 text-[9px] leading-tight text-amber-700/90 tabular-nums">
+            {countdown}
+          </p>
+          <span
+            className="absolute -bottom-1.5 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[6px] border-x-transparent border-t-white/90"
+            aria-hidden
+          />
         </div>
 
         <motion.div

@@ -1,23 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type {
   BottleType,
   NearbyBottle,
   BagItem,
-  BottleCluster,
+  MapStackItem,
   SignalTower,
   Footprint,
   MapAnchor,
 } from "@/lib/types";
 import { FOOTPRINT_RADIUS_M, DEFAULT_BAG_SLOTS } from "@/lib/types";
-import { fetchDiscoveryRadius } from "@/lib/discovery";
+import { fetchDiscoveryRadius, shouldReloadMapAtLocation } from "@/lib/discovery";
 import BottleMap from "@/components/map/BottleMap";
 import { getShopBottleTypes } from "@/lib/bottleCatalog";
 import ShopModal from "@/components/shop/ShopModal";
 import BottlePreviewSheet from "@/components/bottles/BottlePreviewSheet";
-import ClusterListModal from "@/components/bottles/ClusterListModal";
+import StackPickerModal from "@/components/bottles/StackPickerModal";
 import InstallPrompt from "@/components/InstallPrompt";
 import GameHud from "@/components/hud/GameHud";
 import MapActionBar from "@/components/hud/MapActionBar";
@@ -35,7 +35,7 @@ export default function MapPage() {
   const [towers, setTowers] = useState<SignalTower[]>([]);
   const [bottleTypes, setBottleTypes] = useState<BottleType[]>([]);
   const [selectedBottle, setSelectedBottle] = useState<NearbyBottle | null>(null);
-  const [clusterBottles, setClusterBottles] = useState<NearbyBottle[] | null>(null);
+  const [stackItems, setStackItems] = useState<MapStackItem[] | null>(null);
   const [showShop, setShowShop] = useState(false);
   const [showBag, setShowBag] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
@@ -57,16 +57,56 @@ export default function MapPage() {
   const [userId, setUserId] = useState<string | null>(null);
 
   const getSupabase = useCallback(() => createClient(), []);
+  const lastGpsReloadRef = useRef<{ lat: number; lng: number; at: number } | null>(null);
 
   const footprintMode = mapAnchor?.type === "footprint";
 
   const anchorLocation = useMemo(() => {
-    if (mapAnchor) return { lat: mapAnchor.lat, lng: mapAnchor.lng };
+    if (mapAnchor?.type === "footprint") {
+      return { lat: mapAnchor.lat, lng: mapAnchor.lng };
+    }
     if (userLocation) return userLocation;
+    if (mapAnchor) return { lat: mapAnchor.lat, lng: mapAnchor.lng };
     return null;
   }, [mapAnchor, userLocation]);
 
   const effectiveRadius = footprintMode ? FOOTPRINT_RADIUS_M : discoveryRadius;
+
+  const reloadMapAtAnchor = useCallback(
+    async (
+      lat: number,
+      lng: number,
+      isFootprint: boolean,
+      options?: { showLoading?: boolean }
+    ) => {
+      if (options?.showLoading) setLoading(true);
+      const supabase = getSupabase();
+
+      const radius = isFootprint
+        ? FOOTPRINT_RADIUS_M
+        : await fetchDiscoveryRadius(supabase, lat, lng);
+
+      if (!isFootprint) setDiscoveryRadius(radius);
+
+      const [bottlesRes, towersRes] = await Promise.all([
+        supabase.rpc("nearby_bottles", {
+          lat,
+          lng,
+          radius_m: radius,
+        }),
+        supabase.rpc("nearby_signal_towers", {
+          lat,
+          lng,
+          radius_m: isFootprint ? FOOTPRINT_RADIUS_M : null,
+        }),
+      ]);
+
+      if (!bottlesRes.error && bottlesRes.data) setBottles(bottlesRes.data);
+      if (!towersRes.error && towersRes.data) setTowers(towersRes.data);
+      if (options?.showLoading) setLoading(false);
+    },
+    [getSupabase]
+  );
 
   const loadPlayer = useCallback(async () => {
     const supabase = getSupabase();
@@ -100,7 +140,13 @@ export default function MapPage() {
   }, [getSupabase]);
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
+    if (!navigator.geolocation) {
+      setGeoError("Geolocation is not supported on this device.");
+      setLoading(false);
+      return;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserLocation(loc);
@@ -115,8 +161,10 @@ export default function MapPage() {
         );
         setLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 15000 }
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
     );
+
+    return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
   useEffect(() => {
@@ -132,50 +180,28 @@ export default function MapPage() {
   useEffect(() => {
     if (!anchorLocation) return;
 
-    async function loadMapData() {
-      setLoading(true);
-      const supabase = getSupabase();
+    const { lat, lng } = anchorLocation;
 
-      let radius = FOOTPRINT_RADIUS_M;
-      if (!footprintMode) {
-        radius = await fetchDiscoveryRadius(supabase, anchorLocation!.lat, anchorLocation!.lng);
-        setDiscoveryRadius(radius);
+    if (!footprintMode) {
+      if (!shouldReloadMapAtLocation(lat, lng, lastGpsReloadRef.current)) {
+        return;
       }
-
-      const [bottlesRes, towersRes] = await Promise.all([
-        supabase.rpc("nearby_bottles", {
-          lat: anchorLocation!.lat,
-          lng: anchorLocation!.lng,
-          radius_m: radius,
-        }),
-        supabase.rpc("nearby_signal_towers", {
-          lat: anchorLocation!.lat,
-          lng: anchorLocation!.lng,
-          radius_m: footprintMode ? FOOTPRINT_RADIUS_M : null,
-        }),
-      ]);
-
-      if (!bottlesRes.error && bottlesRes.data) setBottles(bottlesRes.data);
-      if (!towersRes.error && towersRes.data) setTowers(towersRes.data);
-      setLoading(false);
+      lastGpsReloadRef.current = { lat, lng, at: Date.now() };
     }
 
-    loadMapData();
-    const interval = setInterval(loadMapData, 30000);
-    return () => clearInterval(interval);
-  }, [anchorLocation, footprintMode, getSupabase]);
+    void reloadMapAtAnchor(lat, lng, footprintMode, { showLoading: true });
 
-  const refreshMapData = async () => {
+    const interval = setInterval(() => {
+      void reloadMapAtAnchor(lat, lng, footprintMode);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [anchorLocation, footprintMode, reloadMapAtAnchor]);
+
+  const refreshMapData = useCallback(async () => {
     if (!anchorLocation) return;
-    const supabase = getSupabase();
-    const radius = footprintMode ? FOOTPRINT_RADIUS_M : discoveryRadius;
-    const [bottlesRes, towersRes] = await Promise.all([
-      supabase.rpc("nearby_bottles", { lat: anchorLocation.lat, lng: anchorLocation.lng, radius_m: radius }),
-      supabase.rpc("nearby_signal_towers", { lat: anchorLocation.lat, lng: anchorLocation.lng, radius_m: null }),
-    ]);
-    if (bottlesRes.data) setBottles(bottlesRes.data);
-    if (towersRes.data) setTowers(towersRes.data);
-  };
+    await reloadMapAtAnchor(anchorLocation.lat, anchorLocation.lng, footprintMode);
+  }, [anchorLocation, footprintMode, reloadMapAtAnchor]);
 
   const handlePurchase = async (capCost: number) => {
     setBottleCaps((c) => c - capCost);
@@ -183,6 +209,13 @@ export default function MapPage() {
     setTimeout(() => setCapPulse(false), 500);
     await loadPlayer();
     await refreshMapData();
+    if (anchorLocation) {
+      lastGpsReloadRef.current = {
+        lat: anchorLocation.lat,
+        lng: anchorLocation.lng,
+        at: Date.now(),
+      };
+    }
   };
 
   const handleBottleSuccess = async (capCost: number) => {
@@ -192,6 +225,7 @@ export default function MapPage() {
   };
 
   const handleFootprintSelect = (fp: Footprint) => {
+    lastGpsReloadRef.current = null;
     setMapAnchor({
       type: "footprint",
       lat: fp.lat,
@@ -203,6 +237,7 @@ export default function MapPage() {
   };
 
   const exitFootprintMode = () => {
+    lastGpsReloadRef.current = null;
     if (userLocation) {
       setMapAnchor({ type: "gps", lat: userLocation.lat, lng: userLocation.lng });
     }
@@ -251,7 +286,7 @@ export default function MapPage() {
             currentUserId={userId ?? undefined}
             footprintMode={footprintMode}
             onSelectBottle={setSelectedBottle}
-            onSelectCluster={(c: BottleCluster) => setClusterBottles(c.bottles)}
+            onSelectStack={(items) => setStackItems(items)}
             onSelectTower={(tower) => {
               if (tower.owner_id === userId) setSelectedTower(tower);
             }}
@@ -267,7 +302,7 @@ export default function MapPage() {
 
           {!loading && bottles.length === 0 && (
             <div className="absolute bottom-56 left-4 right-24 z-10 rounded-xl game-panel-pastel px-4 py-3 text-sm text-slate-700 shadow text-center">
-              No bottles nearby — be the first to drop one!
+              No bottles nearby — the shore is quiet. Cast the first bottle!
             </div>
           )}
         </>
@@ -296,14 +331,19 @@ export default function MapPage() {
         />
       )}
 
-      {clusterBottles && (
-        <ClusterListModal
-          bottles={clusterBottles}
-          onSelect={(b) => {
-            setClusterBottles(null);
+      {stackItems && (
+        <StackPickerModal
+          items={stackItems}
+          currentUserId={userId ?? undefined}
+          onSelectBottle={(b) => {
+            setStackItems(null);
             setSelectedBottle(b);
           }}
-          onClose={() => setClusterBottles(null)}
+          onSelectTower={(tower) => {
+            setStackItems(null);
+            setSelectedTower(tower);
+          }}
+          onClose={() => setStackItems(null)}
         />
       )}
 

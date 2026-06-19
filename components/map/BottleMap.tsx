@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox";
 import type { MapEvent, MapRef, ViewStateChangeEvent } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { NearbyBottle, BottleCluster, SignalTower } from "@/lib/types";
-import { CLUSTER_RADIUS_M } from "@/lib/types";
+import type { NearbyBottle, MapStackItem, SignalTower } from "@/lib/types";
+import { CLUSTER_RADIUS_M, TOWER_PROXIMITY_M } from "@/lib/types";
 import {
   createDiscoveryCircleGeoJSON,
   createDiscoveryMaskGeoJSON,
@@ -19,7 +19,8 @@ import {
   MAP_MIN_ZOOM_RADIUS_MULTIPLIER,
   MAP_USER_VISIBLE_MARGIN_PX,
 } from "@/lib/mapConstraints";
-import { clusterBottles } from "@/lib/clusterBottles";
+import { clusterMapItems, stackFromItems, toMapStackItems } from "@/lib/clusterMapItems";
+import { getStackItemsAtClick } from "@/lib/mapHitTest";
 import { applyGreyRoadColors } from "@/lib/mapRoadColors";
 import BottleMarker from "@/components/bottles/BottleMarker";
 import ClusterMarker from "@/components/bottles/ClusterMarker";
@@ -52,7 +53,7 @@ type Props = {
   currentUserId?: string;
   footprintMode?: boolean;
   onSelectBottle: (bottle: NearbyBottle) => void;
-  onSelectCluster: (cluster: BottleCluster) => void;
+  onSelectStack: (items: MapStackItem[]) => void;
   onSelectTower?: (tower: SignalTower) => void;
   radiusM: number;
   selectedBottleId?: string | null;
@@ -107,7 +108,7 @@ export default function BottleMap({
   currentUserId,
   footprintMode = false,
   onSelectBottle,
-  onSelectCluster,
+  onSelectStack,
   onSelectTower,
   radiusM,
   selectedBottleId = null,
@@ -116,6 +117,11 @@ export default function BottleMap({
   const mapRef = useRef<MapRef>(null);
   const [viewState, setViewState] = useState<ViewState>(() =>
     createInitialViewState(anchorLocation)
+  );
+
+  const allItems = useMemo(
+    () => toMapStackItems(bottles, towers),
+    [bottles, towers]
   );
 
   const circleGeoJSON = useMemo(
@@ -128,9 +134,57 @@ export default function BottleMap({
     [anchorLocation.lng, anchorLocation.lat, radiusM]
   );
 
+  const towerRangeGeoJSON = useMemo(() => {
+    const ownerTowers = towers.filter((t) => t.owner_id === currentUserId);
+    return {
+      type: "FeatureCollection" as const,
+      features: ownerTowers.map((tower) =>
+        createDiscoveryCircleGeoJSON(tower.lng, tower.lat, TOWER_PROXIMITY_M)
+      ),
+    };
+  }, [towers, currentUserId]);
+
   const markers = useMemo(
-    () => clusterBottles(bottles, CLUSTER_RADIUS_M),
-    [bottles]
+    () => clusterMapItems(bottles, towers, CLUSTER_RADIUS_M),
+    [bottles, towers]
+  );
+
+  const resolveClickAtPoint = useCallback(
+    (point: { x: number; y: number }) => {
+      const map = mapRef.current?.getMap();
+      if (!map) return;
+
+      const hits = getStackItemsAtClick(map, point, allItems);
+      if (hits.length >= 2) {
+        const { lng, lat } = map.unproject([point.x, point.y]);
+        onSelectStack(stackFromItems(hits, lat, lng).items);
+        return;
+      }
+
+      const item = hits[0];
+      if (!item) return;
+
+      if (item.kind === "bottle") {
+        onSelectBottle(item.bottle);
+      } else if (item.tower.owner_id === currentUserId) {
+        onSelectTower?.(item.tower);
+      }
+    },
+    [allItems, currentUserId, onSelectBottle, onSelectStack, onSelectTower]
+  );
+
+  const handleMarkerClick = useCallback(
+    (e: MouseEvent) => {
+      e.stopPropagation();
+      const map = mapRef.current?.getMap();
+      if (!map) return;
+      const rect = map.getContainer().getBoundingClientRect();
+      resolveClickAtPoint({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    },
+    [resolveClickAtPoint]
   );
 
   const applyMinZoom = useCallback(
@@ -250,6 +304,21 @@ export default function BottleMap({
         />
       </Source>
 
+      {towerRangeGeoJSON.features.length > 0 && (
+        <Source id="tower-range-circles" type="geojson" data={towerRangeGeoJSON}>
+          <Layer
+            id="tower-range-outline"
+            type="line"
+            paint={{
+              "line-color": "#38bdf8",
+              "line-width": 2,
+              "line-opacity": 0.7,
+              "line-dasharray": [2, 2],
+            }}
+          />
+        </Source>
+      )}
+
       {footprintMode && (
         <Marker longitude={anchorLocation.lng} latitude={anchorLocation.lat} anchor="center">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 border-2 border-white shadow-lg">
@@ -270,31 +339,39 @@ export default function BottleMap({
         </div>
       </Marker>
 
-      {towers.map((tower) => (
-        <SignalTowerMarker
-          key={tower.id}
-          tower={tower}
-          isOwner={tower.owner_id === currentUserId}
-          onClick={() => onSelectTower?.(tower)}
-        />
-      ))}
+      {markers.map((m) => {
+        if (m.kind === "cluster") {
+          return (
+            <ClusterMarker
+              key={m.stack.id}
+              stack={m.stack}
+              onClick={() => onSelectStack(m.stack.items)}
+            />
+          );
+        }
 
-      {markers.map((m) =>
-        m.kind === "single" ? (
-          <BottleMarker
-            key={m.bottle.id}
-            bottle={m.bottle}
-            isSelected={m.bottle.id === selectedBottleId}
-            onClick={() => onSelectBottle(m.bottle)}
+        if (m.item.kind === "bottle") {
+          const bottle = m.item.bottle;
+          return (
+            <BottleMarker
+              key={`bottle-${bottle.id}`}
+              bottle={bottle}
+              isSelected={bottle.id === selectedBottleId}
+              onClick={handleMarkerClick}
+            />
+          );
+        }
+
+        const tower = m.item.tower;
+        return (
+          <SignalTowerMarker
+            key={`tower-${tower.id}`}
+            tower={tower}
+            isOwner={tower.owner_id === currentUserId}
+            onClick={handleMarkerClick}
           />
-        ) : (
-          <ClusterMarker
-            key={m.cluster.id}
-            cluster={m.cluster}
-            onClick={() => onSelectCluster(m.cluster)}
-          />
-        )
-      )}
+        );
+      })}
     </Map>
   );
 }

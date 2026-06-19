@@ -10,7 +10,7 @@ const SHOP_CATALOG: CatalogEntry[] = [
   {
     slug: "basic-day",
     name: "1 Day",
-    description: "Quick notes that wash away in a day",
+    description: "A whisper carried on the tide, gone by morning",
     duration_hours: 24,
     icon: "🍾",
     marker_color: "#60a5fa",
@@ -20,7 +20,7 @@ const SHOP_CATALOG: CatalogEntry[] = [
   {
     slug: "basic-week",
     name: "1 Week",
-    description: "Conversations that last a week",
+    description: "Words that drift a week before the sea claims them",
     duration_hours: 168,
     icon: "🪵",
     marker_color: "#34d399",
@@ -30,7 +30,7 @@ const SHOP_CATALOG: CatalogEntry[] = [
   {
     slug: "basic-month",
     name: "1 Month",
-    description: "Long stories that last 30 days",
+    description: "A long tale anchored for a month upon the waves",
     duration_hours: 720,
     icon: "🌊",
     marker_color: "#fbbf24",
@@ -40,7 +40,7 @@ const SHOP_CATALOG: CatalogEntry[] = [
   {
     slug: "sealed",
     name: "Sealed",
-    description: "Password-protected bottle — lasts 7 days",
+    description: "Locked with a secret — only the worthy may open its depths",
     duration_hours: 168,
     icon: "🔒",
     marker_color: "#a78bfa",
@@ -66,6 +66,12 @@ function normalizeShopBottleType(type: BottleType): BottleType {
   const catalog = catalogBySlug.get(resolveCatalogSlug(type.slug));
   if (!catalog) return type;
   return { ...type, ...catalog };
+}
+
+/** Poetic catalog line for map surfaces (preview, stack picker). */
+export function getCatalogDescription(typeSlug: string): string | undefined {
+  const catalog = catalogBySlug.get(resolveCatalogSlug(typeSlug));
+  return catalog?.description;
 }
 
 /** Bottle types shown in the Shop tab, in catalog order with canonical labels. */

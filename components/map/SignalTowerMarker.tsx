@@ -2,12 +2,13 @@
 
 import { Marker } from "react-map-gl/mapbox";
 import { Radio } from "lucide-react";
+import type { MouseEvent } from "react";
 import type { SignalTower } from "@/lib/types";
 
 type Props = {
   tower: SignalTower;
   isOwner: boolean;
-  onClick: () => void;
+  onClick: (e: MouseEvent) => void;
 };
 
 export default function SignalTowerMarker({ tower, isOwner, onClick }: Props) {
@@ -15,8 +16,11 @@ export default function SignalTowerMarker({ tower, isOwner, onClick }: Props) {
     <Marker longitude={tower.lng} latitude={tower.lat} anchor="bottom">
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); onClick(); }}
-        className={`flex flex-col items-center ${isOwner ? "cursor-pointer" : "cursor-default"}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick(e);
+        }}
+        className={`relative z-20 flex flex-col items-center ${isOwner ? "cursor-pointer" : "cursor-default"}`}
         aria-label={isOwner ? "Your signal tower" : "Signal tower"}
       >
         <div className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-white shadow-lg ${isOwner ? "bg-sky-500" : "bg-slate-500"}`}>

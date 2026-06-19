@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isExpired } from "@/lib/geo";
 import BottleViewHeader from "@/components/bottles/BottleViewHeader";
 import BottleConversation from "@/components/bottles/BottleConversation";
-import type { Message } from "@/lib/types";
+import type { BottleThreadResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -25,87 +25,15 @@ export default async function BottlePage({
 
   if (!user) notFound();
 
-  const { data: bottle } = await supabase
-    .from("bottles")
-    .select(
-      `
-      id,
-      creator_id,
-      title,
-      description,
-      is_sealed,
-      expires_at,
-      created_at,
-      bottle_type:bottle_types (id, slug, name, description, duration_hours, icon, marker_color, is_sealed),
-      creator:profiles!bottles_creator_id_fkey (id, display_name, avatar_url, created_at)
-    `
-    )
-    .eq("id", id)
-    .single();
+  const { data: threadData, error } = await supabase.rpc("get_bottle_thread", {
+    p_bottle_id: id,
+  });
 
-  if (!bottle) notFound();
+  if (error || !threadData) notFound();
 
-  const isCreator = bottle.creator_id === user.id;
-  let isUnlocked = isCreator || !bottle.is_sealed;
-
-  if (bottle.is_sealed && !isCreator) {
-    const { data: unlock } = await supabase
-      .from("bottle_unlocks")
-      .select("bottle_id")
-      .eq("bottle_id", id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (unlock) isUnlocked = true;
-  }
-
-  let messages: Message[] = [];
-  if (isUnlocked) {
-    const { data: msgData } = await supabase
-      .from("messages")
-      .select(
-        `
-        id,
-        bottle_id,
-        author_id,
-        body,
-        created_at,
-        is_remote,
-        author:profiles!messages_author_id_fkey (id, display_name, avatar_url, created_at)
-      `
-      )
-      .eq("bottle_id", id)
-      .order("created_at", { ascending: true });
-
-    messages = (msgData ?? []).map((m) => ({
-      id: m.id,
-      bottle_id: m.bottle_id,
-      author_id: m.author_id,
-      body: m.body,
-      created_at: m.created_at,
-      is_remote: m.is_remote,
-      author: Array.isArray(m.author) ? m.author[0] : m.author ?? undefined,
-    }));
-  }
-
-  let bagRow: { id: string } | null = null;
-  const { data: bagData, error: bagError } = await supabase
-    .from("bag_items")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("source_bottle_id", id)
-    .maybeSingle();
-
-  if (!bagError && bagData) bagRow = bagData;
-
+  const thread = threadData as BottleThreadResponse;
+  const { bottle, bottle_type: bottleType, creator } = thread;
   const expired = isExpired(bottle.expires_at);
-  const bottleType = Array.isArray(bottle.bottle_type)
-    ? bottle.bottle_type[0]
-    : bottle.bottle_type;
-  const creator = Array.isArray(bottle.creator) ? bottle.creator[0] : bottle.creator;
-
-  const participated =
-    bottle.creator_id === user.id ||
-    messages.some((m) => m.author_id === user.id);
 
   return (
     <div className="flex flex-col h-dvh game-map-bg">
@@ -116,8 +44,8 @@ export default async function BottlePage({
         creatorId={creator?.id}
         creatorName={creator?.display_name ?? "Sailor"}
         expiresAt={bottle.expires_at}
-        participated={participated}
-        alreadyInBag={!!bagRow}
+        participated={thread.participated}
+        alreadyInBag={thread.already_in_bag}
         isExpired={expired}
       />
 
@@ -138,9 +66,9 @@ export default async function BottlePage({
           title={bottle.title}
           description={bottle.description}
           isSealed={!!bottle.is_sealed}
-          isCreator={isCreator}
-          isUnlocked={isUnlocked}
-          initialMessages={messages}
+          isCreator={thread.is_creator}
+          isUnlocked={thread.is_unlocked}
+          initialMessages={thread.messages}
           currentUserId={user.id}
           footprintId={footprintId ?? null}
         />

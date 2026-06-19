@@ -106,9 +106,10 @@ body {
 }
 
 .action-label {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.2;
-  color: rgba(51, 65, 85, 0.8);
+  font-weight: 500;
+  color: rgba(30, 41, 59, 0.92);
   text-align: center;
   max-width: 5rem;
 }

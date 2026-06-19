@@ -87,7 +87,7 @@ export default async function HomePage() {
           <FeatureCard
             icon="🔭"
             title="Discover within 2km"
-            description="Crowded spots cluster on the map. Tap to browse bottles at that location."
+            description="Crowded spots cluster on the map. Tap to browse bottles and towers at that location."
           />
           <FeatureCard
             icon="🎒"
