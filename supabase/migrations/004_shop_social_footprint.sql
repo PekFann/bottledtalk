@@ -18,8 +18,10 @@ create table if not exists public.profiles (
 );
 
 alter table public.profiles
+  add column if not exists avatar_url text,
   add column if not exists bottle_caps integer not null default 100,
-  add column if not exists bag_slot_limit integer not null default 10;
+  add column if not exists bag_slot_limit integer not null default 10,
+  add column if not exists bio text;
 
 create table if not exists public.bottle_types (
   id uuid primary key default gen_random_uuid(),
@@ -174,10 +176,6 @@ create policy "Users can delete own bag items"
   on public.bag_items for delete to authenticated using (user_id = auth.uid());
 
 -- ── 004 schema changes ──────────────────────────────────────────────────────
-
--- Profiles: bio
-alter table public.profiles
-  add column if not exists bio text;
 
 -- Bottle types: sealed flag + replace catalog
 alter table public.bottle_types
