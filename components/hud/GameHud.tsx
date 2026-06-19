@@ -23,7 +23,7 @@ export default function GameHud({
       <div className="game-panel-pastel flex items-center justify-between gap-3 px-3 py-2">
         <div className="flex items-center gap-2 min-w-0">
           <MessageCircle className="h-4 w-4 shrink-0 text-teal-500" strokeWidth={2.25} />
-          <span className="font-medium text-slate-700 truncate text-sm tracking-tight">
+          <span className="font-handwriting font-medium text-slate-700 truncate text-base tracking-tight">
             {getJournalTitle(displayName)}
           </span>
         </div>

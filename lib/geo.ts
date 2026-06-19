@@ -46,7 +46,12 @@ function buildCircleRing(
   return coords;
 }
 
-const DISCOVERY_MASK_OUTER_RADIUS_MULTIPLIER = 6;
+const DISCOVERY_MASK_OUTER_RADIUS_MULTIPLIER = 40;
+
+/** Outer vignette extends well beyond the viewport at min zoom (scales with discovery radius). */
+export function getDiscoveryMaskOuterRadiusM(radiusM: number): number {
+  return Math.max(radiusM * DISCOVERY_MASK_OUTER_RADIUS_MULTIPLIER, 80_000);
+}
 
 export function createDiscoveryCircleGeoJSON(
   lng: number,
@@ -73,7 +78,7 @@ export function createDiscoveryMaskGeoJSON(
   const outer = buildCircleRing(
     lng,
     lat,
-    radiusM * DISCOVERY_MASK_OUTER_RADIUS_MULTIPLIER,
+    getDiscoveryMaskOuterRadiusM(radiusM),
     points
   );
   const inner = [...buildCircleRing(lng, lat, radiusM, points)].reverse();

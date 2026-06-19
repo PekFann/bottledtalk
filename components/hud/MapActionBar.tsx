@@ -49,7 +49,7 @@ export default function MapActionBar({
   onOpenBag,
 }: Props) {
   return (
-    <div className="absolute bottom-6 right-4 z-20 flex flex-col items-center gap-4 pb-[max(0px,env(safe-area-inset-bottom))]">
+    <div className="absolute bottom-12 right-4 z-20 flex flex-col items-center gap-4 pb-[max(0px,env(safe-area-inset-bottom))]">
       <ActionButton label="Cast bottle" onClick={onCast} variant="primary">
         <Send className="h-5 w-5" strokeWidth={2.25} />
       </ActionButton>

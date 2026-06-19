@@ -12,6 +12,7 @@ import {
 } from "@/lib/geo";
 import {
   adjustCenterToKeepUserVisible,
+  clampCenterNearUser,
   getBoundsAroundPoint,
   MAP_BOUNDS_RADIUS_MULTIPLIER,
   MAP_MIN_ZOOM_PADDING_PX,
@@ -25,8 +26,8 @@ import ClusterMarker from "@/components/bottles/ClusterMarker";
 
 const MAP_STYLE = "mapbox://styles/mapbox/outdoors-v12";
 
-const DISCOVERY_OUTLINE = "#64748b";
-const DISCOVERY_MASK_FILL = "#6b7280";
+const DISCOVERY_OUTLINE = "#ffffff";
+const DISCOVERY_MASK_FILL = "#1e293b";
 const USER_PIN = "#3b82f6";
 
 const INITIAL_PITCH = 45;
@@ -60,6 +61,37 @@ function createInitialViewState(userLocation: { lat: number; lng: number }): Vie
   };
 }
 
+function applyPanConstraints(
+  centerLng: number,
+  centerLat: number,
+  userLocation: { lng: number; lat: number },
+  radiusM: number,
+  map: MapEvent["target"] | undefined
+): { longitude: number; latitude: number } {
+  const maxPanM = radiusM * MAP_BOUNDS_RADIUS_MULTIPLIER;
+  let { lng, lat } = clampCenterNearUser(
+    { lng: centerLng, lat: centerLat },
+    userLocation,
+    maxPanM
+  );
+
+  if (map) {
+    const visible = adjustCenterToKeepUserVisible(
+      map,
+      userLocation.lng,
+      userLocation.lat,
+      MAP_USER_VISIBLE_MARGIN_PX
+    );
+    if (visible) {
+      lng = visible.lng;
+      lat = visible.lat;
+    }
+  }
+
+  const clamped = clampCenterNearUser({ lng, lat }, userLocation, maxPanM);
+  return { longitude: clamped.lng, latitude: clamped.lat };
+}
+
 export default function BottleMap({
   userLocation,
   bottles,
@@ -72,16 +104,6 @@ export default function BottleMap({
   const mapRef = useRef<MapRef>(null);
   const [viewState, setViewState] = useState<ViewState>(() =>
     createInitialViewState(userLocation)
-  );
-
-  const maxBounds = useMemo(
-    () =>
-      getBoundsAroundPoint(
-        userLocation.lng,
-        userLocation.lat,
-        radiusM * MAP_BOUNDS_RADIUS_MULTIPLIER
-      ),
-    [userLocation.lng, userLocation.lat, radiusM]
   );
 
   const circleGeoJSON = useMemo(
@@ -99,23 +121,6 @@ export default function BottleMap({
     [bottles]
   );
 
-  useEffect(() => {
-    setViewState(createInitialViewState(userLocation));
-
-    const map = mapRef.current?.getMap();
-    if (!map) return;
-
-    const bounds = getBoundsAroundPoint(
-      userLocation.lng,
-      userLocation.lat,
-      radiusM * MAP_MIN_ZOOM_RADIUS_MULTIPLIER
-    );
-    const camera = map.cameraForBounds(bounds, { padding: MAP_MIN_ZOOM_PADDING_PX });
-    if (camera?.zoom != null) {
-      map.setMinZoom(camera.zoom);
-    }
-  }, [userLocation, radiusM]);
-
   const applyMinZoom = useCallback(
     (map: MapEvent["target"]) => {
       const bounds = getBoundsAroundPoint(
@@ -130,6 +135,12 @@ export default function BottleMap({
     },
     [userLocation.lng, userLocation.lat, radiusM]
   );
+
+  useEffect(() => {
+    setViewState(createInitialViewState(userLocation));
+    const map = mapRef.current?.getMap();
+    if (map) applyMinZoom(map);
+  }, [userLocation, radiusM, applyMinZoom]);
 
   const handleMapLoad = useCallback(
     (e: MapEvent) => {
@@ -150,29 +161,37 @@ export default function BottleMap({
     [applyMinZoom]
   );
 
-  const handleMove = useCallback(
-    (evt: ViewStateChangeEvent) => {
-      const { zoom, pitch, bearing } = evt.viewState;
-      let { longitude, latitude } = evt.viewState;
-      const map = mapRef.current?.getMap();
+  const handleMove = useCallback((evt: ViewStateChangeEvent) => {
+    const { longitude, latitude, zoom, pitch, bearing } = evt.viewState;
+    setViewState({ longitude, latitude, zoom, pitch, bearing });
+  }, []);
 
-      if (map) {
-        const adjusted = adjustCenterToKeepUserVisible(
-          map,
-          userLocation.lng,
-          userLocation.lat,
-          MAP_USER_VISIBLE_MARGIN_PX
-        );
-        if (adjusted) {
-          longitude = adjusted.lng;
-          latitude = adjusted.lat;
-        }
-      }
+  const handleMoveEnd = useCallback(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
 
-      setViewState({ longitude, latitude, zoom, pitch, bearing });
-    },
-    [userLocation.lng, userLocation.lat]
-  );
+    const center = map.getCenter();
+    const corrected = applyPanConstraints(
+      center.lng,
+      center.lat,
+      userLocation,
+      radiusM,
+      map
+    );
+
+    if (
+      Math.abs(corrected.longitude - center.lng) > 1e-7 ||
+      Math.abs(corrected.latitude - center.lat) > 1e-7
+    ) {
+      setViewState({
+        longitude: corrected.longitude,
+        latitude: corrected.latitude,
+        zoom: map.getZoom(),
+        pitch: map.getPitch(),
+        bearing: map.getBearing(),
+      });
+    }
+  }, [userLocation, radiusM]);
 
   if (!token) {
     return (
@@ -187,13 +206,13 @@ export default function BottleMap({
       ref={mapRef}
       mapboxAccessToken={token}
       {...viewState}
-      maxBounds={maxBounds}
       maxZoom={18}
       maxPitch={85}
       style={{ width: "100%", height: "100%" }}
       mapStyle={MAP_STYLE}
       onLoad={handleMapLoad}
       onMove={handleMove}
+      onMoveEnd={handleMoveEnd}
     >
       <Source id="discovery-mask" type="geojson" data={maskGeoJSON}>
         <Layer
@@ -201,7 +220,7 @@ export default function BottleMap({
           type="fill"
           paint={{
             "fill-color": DISCOVERY_MASK_FILL,
-            "fill-opacity": 0.35,
+            "fill-opacity": 0.58,
           }}
         />
       </Source>
@@ -212,8 +231,8 @@ export default function BottleMap({
           type="line"
           paint={{
             "line-color": DISCOVERY_OUTLINE,
-            "line-width": 2,
-            "line-opacity": 0.8,
+            "line-width": 2.5,
+            "line-opacity": 0.95,
             "line-dasharray": [2, 2],
           }}
         />
