@@ -14,6 +14,7 @@ import type {
 import { FOOTPRINT_RADIUS_M, DEFAULT_BAG_SLOTS } from "@/lib/types";
 import { fetchDiscoveryRadius } from "@/lib/discovery";
 import BottleMap from "@/components/map/BottleMap";
+import { getShopBottleTypes } from "@/lib/bottleCatalog";
 import ShopModal from "@/components/shop/ShopModal";
 import BottlePreviewSheet from "@/components/bottles/BottlePreviewSheet";
 import ClusterListModal from "@/components/bottles/ClusterListModal";
@@ -308,7 +309,7 @@ export default function MapPage() {
 
       {showShop && userLocation && (
         <ShopModal
-          bottleTypes={bottleTypes}
+          bottleTypes={getShopBottleTypes(bottleTypes)}
           location={userLocation}
           bottleCaps={bottleCaps}
           footprintMode={footprintMode}

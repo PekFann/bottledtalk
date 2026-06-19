@@ -5,6 +5,7 @@ export type Profile = {
   bio?: string | null;
   bottle_caps?: number;
   bag_slot_limit?: number;
+  is_admin?: boolean;
   created_at: string;
 };
 

@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import { Coins, Radio, Footprints, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getShopBottleTypes } from "@/lib/bottleCatalog";
 import type { BottleType } from "@/lib/types";
 import {
   FOOTPRINT_COST,
@@ -12,7 +13,6 @@ import {
   SIGNAL_TOWER_DAYS,
 } from "@/lib/types";
 import { formatDuration } from "@/lib/geo";
-import BottleImage from "@/components/bottles/BottleImage";
 import PinInput from "@/components/ui/PinInput";
 
 type Tab = "bottles" | "tower" | "footprint";
@@ -43,8 +43,9 @@ export default function ShopModal({
   onTowerSuccess,
   onFootprintSuccess,
 }: Props) {
+  const shopBottleTypes = getShopBottleTypes(bottleTypes);
   const [tab, setTab] = useState<Tab>(initialTab);
-  const [selectedTypeId, setSelectedTypeId] = useState(bottleTypes[0]?.id ?? "");
+  const [selectedTypeId, setSelectedTypeId] = useState(shopBottleTypes[0]?.id ?? "");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [pin, setPin] = useState("");
@@ -54,7 +55,7 @@ export default function ShopModal({
   const [error, setError] = useState<string | null>(null);
 
   const getSupabase = useCallback(() => createClient(), []);
-  const selectedType = bottleTypes.find((t) => t.id === selectedTypeId);
+  const selectedType = shopBottleTypes.find((t) => t.id === selectedTypeId);
   const isSealed = selectedType?.is_sealed ?? false;
   const bottleCost = selectedType?.cap_cost ?? 0;
   const canAffordBottle = bottleCaps >= bottleCost;
@@ -181,7 +182,7 @@ export default function ShopModal({
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Bottle type</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {bottleTypes.map((type) => {
+                    {shopBottleTypes.map((type) => {
                       const affordable = bottleCaps >= type.cap_cost;
                       const selected = selectedTypeId === type.id;
                       return (
@@ -196,12 +197,21 @@ export default function ShopModal({
                                 ? "border-slate-200 bg-white hover:border-slate-300"
                                 : "border-slate-100 bg-slate-50 opacity-50"
                           }`}
+                          style={selected ? { borderColor: type.marker_color } : undefined}
                         >
-                          <BottleImage size="sm" className="shrink-0 h-[98px] w-[98px]" />
+                          <div
+                            className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-xl text-4xl"
+                            style={{ backgroundColor: `${type.marker_color}22` }}
+                            aria-hidden
+                          >
+                            {type.icon}
+                          </div>
                           <div className="min-w-0 flex-1">
                             <p className="font-medium text-sm text-slate-900">{type.name}</p>
-                            <p className="text-xs text-slate-500 mt-0.5">
+                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{type.description}</p>
+                            <p className="text-xs text-slate-500 mt-1">
                               {formatDuration(type.duration_hours)}
+                              {type.is_sealed ? " · PIN locked" : ""}
                             </p>
                             <p className="text-xs font-medium text-amber-700 mt-1">
                               {type.cap_cost} caps
@@ -242,7 +252,7 @@ export default function ShopModal({
               )}
               {error && <div className="rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
               <button type="submit" disabled={submitting || footprintMode || !selectedTypeId || !canAffordBottle} className="w-full btn-primary-block font-medium py-3">
-                {submitting ? "Casting…" : `Cast bottle (−${bottleCost} caps)`}
+                {submitting ? "Dropping…" : `Drop bottle (−${bottleCost} caps)`}
               </button>
             </form>
           )}

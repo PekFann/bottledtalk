@@ -77,7 +77,7 @@ export default async function HomePage() {
           <FeatureCard
             icon="🪙"
             title="Bottle caps"
-            description="Start with 100 caps. Every bottle costs caps — Glass 10, Treasure 100."
+            description="Start with 100 caps. Buy bottles, towers, and footprints from the Shop."
           />
           <FeatureCard
             icon="📍"
@@ -99,10 +99,10 @@ export default async function HomePage() {
         <div className="mt-16 rounded-2xl glass p-6 sm:p-8 text-left max-w-2xl mx-auto">
           <h2 className="font-bold text-slate-900 text-lg mb-4">Bottle types &amp; costs</h2>
           <ul className="space-y-3">
-            <BottleTypeRow name="Glass" duration="24 hours" caps={10} />
-            <BottleTypeRow name="Cork" duration="3 days" caps={25} />
-            <BottleTypeRow name="Driftwood" duration="7 days" caps={50} />
-            <BottleTypeRow name="Treasure" duration="30 days" caps={100} />
+            <BottleTypeRow name="1 Day" duration="24 hours" caps={10} />
+            <BottleTypeRow name="1 Week" duration="7 days" caps={50} />
+            <BottleTypeRow name="1 Month" duration="30 days" caps={120} />
+            <BottleTypeRow name="Sealed" duration="7 days" caps={75} />
           </ul>
         </div>
       </main>
