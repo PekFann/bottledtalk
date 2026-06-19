@@ -17,14 +17,10 @@ type Props = {
 function ActionButton({
   label,
   onClick,
-  variant,
-  iconClassName,
   children,
 }: {
   label: string;
   onClick: () => void;
-  variant: "primary" | "secondary";
-  iconClassName?: string;
   children: ReactNode;
 }) {
   return (
@@ -33,14 +29,10 @@ function ActionButton({
         type="button"
         onClick={onClick}
         whileTap={{ scale: 0.92 }}
-        className={`action-circle ${
-          variant === "primary"
-            ? "bg-sky-500 text-white shadow-lg shadow-sky-300/40 hover:bg-sky-600"
-            : "bg-white/95 text-slate-800 ring-1 ring-slate-200/80 shadow-md hover:bg-white"
-        }`}
+        className="action-circle bg-white text-sky-600 shadow-lg hover:bg-white/95"
         aria-label={label}
       >
-        <span className={iconClassName}>{children}</span>
+        {children}
       </motion.button>
       <span className="action-label">{label}</span>
     </div>
@@ -57,31 +49,16 @@ export default function MapActionBar({
 }: Props) {
   return (
     <div className="absolute bottom-12 right-4 z-20 flex flex-col items-center gap-3 pb-[max(0px,env(safe-area-inset-bottom))]">
-      <ActionButton
-        label="Friends"
-        onClick={onOpenFriends}
-        variant="secondary"
-        iconClassName="text-slate-600"
-      >
+      <ActionButton label="Friends" onClick={onOpenFriends}>
         <Users className="h-[22px] w-[22px]" strokeWidth={2.25} />
       </ActionButton>
-      <ActionButton label="Shop" onClick={onOpenShop} variant="primary">
+      <ActionButton label="Shop" onClick={onOpenShop}>
         <Store className="h-[22px] w-[22px]" strokeWidth={2.25} />
       </ActionButton>
-      <ActionButton
-        label={`Pouch ${bagUsed}/${bagLimit}`}
-        onClick={onOpenBag}
-        variant="secondary"
-        iconClassName="text-amber-700"
-      >
+      <ActionButton label={`Pouch ${bagUsed}/${bagLimit}`} onClick={onOpenBag}>
         <PouchIcon className="h-[22px] w-[22px]" />
       </ActionButton>
-      <ActionButton
-        label="Footprint"
-        onClick={onOpenFootprints}
-        variant="secondary"
-        iconClassName="text-emerald-600"
-      >
+      <ActionButton label="Footprint" onClick={onOpenFootprints}>
         <Footprints className="h-[22px] w-[22px]" strokeWidth={2.25} />
       </ActionButton>
     </div>
