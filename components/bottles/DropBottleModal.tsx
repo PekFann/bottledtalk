@@ -60,14 +60,17 @@ export default function DropBottleModal({
     if (data) onSuccess(cost);
   };
 
+  const fieldClassName =
+    "font-handwriting w-full rounded-lg border-2 border-slate-300 bg-white px-4 py-3 text-lg text-slate-900 placeholder:text-slate-500 shadow-sm focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/40 game-input";
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-4 sm:pb-0">
       <motion.div
-        className="w-full max-w-lg rounded-xl game-panel-light max-h-[90dvh] overflow-y-auto"
+        className="w-full max-w-lg rounded-xl border border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xl max-h-[90dvh] overflow-y-auto"
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 px-5 py-4 bg-white rounded-t-xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4 rounded-t-xl">
           <div>
             <h2 className="text-base font-semibold text-slate-900">Cast a bottle</h2>
             <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
@@ -76,11 +79,12 @@ export default function DropBottleModal({
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-400 transition-colors"
             aria-label="Close"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" strokeWidth={2.25} />
           </button>
         </div>
 
@@ -89,7 +93,7 @@ export default function DropBottleModal({
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Bottle type
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {bottleTypes.map((type) => {
                 const affordable = bottleCaps >= type.cap_cost;
                 const selected = selectedTypeId === type.id;
@@ -98,20 +102,27 @@ export default function DropBottleModal({
                     key={type.id}
                     type="button"
                     onClick={() => setSelectedTypeId(type.id)}
-                    className={`rounded-lg border p-3 text-left transition-all ${
+                    className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-all ${
                       selected
-                        ? "border-amber-400 bg-amber-50"
+                        ? "border-amber-400 bg-amber-50 ring-2 ring-amber-200"
                         : affordable
-                          ? "border-slate-200 hover:border-slate-300"
-                          : "border-slate-100 opacity-50"
+                          ? "border-slate-200 bg-white hover:border-slate-300"
+                          : "border-slate-100 bg-slate-50 opacity-50"
                     }`}
                   >
-                    <BottleImage size="sm" />
-                    <p className="font-medium text-sm mt-1 text-slate-900">{type.name}</p>
-                    <p className="text-xs text-slate-500">{formatDuration(type.duration_hours)}</p>
-                    <p className="text-xs font-medium text-amber-700 mt-1">
-                      {type.cap_cost} caps
-                    </p>
+                    <BottleImage
+                      size="sm"
+                      className="shrink-0 h-[98px] w-[98px]"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm text-slate-900">{type.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {formatDuration(type.duration_hours)}
+                      </p>
+                      <p className="text-xs font-medium text-amber-700 mt-1">
+                        {type.cap_cost} caps
+                      </p>
+                    </div>
                   </button>
                 );
               })}
@@ -119,7 +130,7 @@ export default function DropBottleModal({
           </div>
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1.5">
               Title
             </label>
             <input
@@ -128,13 +139,13 @@ export default function DropBottleModal({
               onChange={(e) => setTitle(e.target.value)}
               maxLength={80}
               required
-              className="font-handwriting w-full rounded-lg border border-slate-200 px-4 py-2.5 text-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/50 game-input"
+              className={fieldClassName}
               placeholder="A note for whoever finds this…"
             />
           </div>
 
           <div>
-            <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-1.5">
               First message
             </label>
             <textarea
@@ -144,7 +155,7 @@ export default function DropBottleModal({
               maxLength={1000}
               required
               rows={4}
-              className="font-handwriting w-full rounded-lg border border-slate-200 px-4 py-2.5 text-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/50 resize-none game-input"
+              className={`${fieldClassName} resize-none`}
               placeholder="Write your message to the sea…"
             />
           </div>
