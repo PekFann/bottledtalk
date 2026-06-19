@@ -23,7 +23,13 @@ export default function SignalTowerMarker({ tower, isOwner, onClick }: Props) {
         className={`relative z-20 flex flex-col items-center ${isOwner ? "cursor-pointer" : "cursor-default"}`}
         aria-label={isOwner ? "Your signal tower" : "Signal tower"}
       >
-        <div className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-white shadow-lg ${isOwner ? "bg-sky-500" : "bg-slate-500"}`}>
+        <div
+          className={`flex items-center justify-center rounded-full border-white shadow-lg ${
+            isOwner
+              ? "h-11 w-11 border-[3px] bg-sky-500 ring-2 ring-sky-300/60"
+              : "h-10 w-10 border-2 bg-slate-500"
+          }`}
+        >
           <Radio className="h-5 w-5 text-white" strokeWidth={2.25} />
         </div>
         {isOwner && (

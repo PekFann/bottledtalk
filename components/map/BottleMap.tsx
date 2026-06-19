@@ -307,12 +307,20 @@ export default function BottleMap({
       {towerRangeGeoJSON.features.length > 0 && (
         <Source id="tower-range-circles" type="geojson" data={towerRangeGeoJSON}>
           <Layer
+            id="tower-range-fill"
+            type="fill"
+            paint={{
+              "fill-color": "#0ea5e9",
+              "fill-opacity": 0.12,
+            }}
+          />
+          <Layer
             id="tower-range-outline"
             type="line"
             paint={{
-              "line-color": "#38bdf8",
-              "line-width": 2,
-              "line-opacity": 0.7,
+              "line-color": "#0284c7",
+              "line-width": 3.5,
+              "line-opacity": 0.95,
               "line-dasharray": [2, 2],
             }}
           />

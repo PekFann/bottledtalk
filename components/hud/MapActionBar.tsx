@@ -29,7 +29,7 @@ function ActionButton({
         type="button"
         onClick={onClick}
         whileTap={{ scale: 0.92 }}
-        className="action-circle bg-white text-sky-600 shadow-lg hover:bg-white/95"
+        className="action-circle bg-white text-sky-600 shadow-xl ring-1 ring-black/10 hover:bg-white/95"
         aria-label={label}
       >
         {children}
