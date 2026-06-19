@@ -1,8 +1,179 @@
 -- Shop, sealed bottles, signal towers, footprints, friends
+--
+-- Prerequisite: migrations 001–003 should be applied first via `supabase db push`.
+-- The bootstrap below creates missing base tables when 004 is run on a fresh project.
 
+create extension if not exists postgis with schema extensions;
 create extension if not exists pgcrypto with schema extensions;
 
 set search_path = public, extensions;
+
+-- ── Bootstrap base schema (from 001–003) if missing ─────────────────────────
+
+create table if not exists public.profiles (
+  id uuid primary key references auth.users (id) on delete cascade,
+  display_name text not null,
+  avatar_url text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.profiles
+  add column if not exists bottle_caps integer not null default 100,
+  add column if not exists bag_slot_limit integer not null default 10;
+
+create table if not exists public.bottle_types (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  name text not null,
+  description text not null,
+  duration_hours integer not null,
+  icon text not null,
+  marker_color text not null
+);
+
+alter table public.bottle_types
+  add column if not exists cap_cost integer not null default 10;
+
+insert into public.bottle_types (slug, name, description, duration_hours, icon, marker_color, cap_cost)
+select v.slug, v.name, v.description, v.duration_hours, v.icon, v.marker_color, v.cap_cost
+from (values
+  ('glass', 'Glass', 'Quick, ephemeral notes', 24, '🍾', '#60a5fa', 10),
+  ('cork', 'Cork', 'Short conversations', 72, '🪵', '#34d399', 25),
+  ('driftwood', 'Driftwood', 'Longer stories', 168, '🌊', '#fbbf24', 50),
+  ('treasure', 'Treasure', 'Rare, long-lived bottles', 720, '💎', '#a78bfa', 100)
+) as v(slug, name, description, duration_hours, icon, marker_color, cap_cost)
+where not exists (select 1 from public.bottle_types limit 1);
+
+create table if not exists public.bottles (
+  id uuid primary key default gen_random_uuid(),
+  creator_id uuid not null references public.profiles (id) on delete cascade,
+  bottle_type_id uuid not null references public.bottle_types (id),
+  location geography(point, 4326) not null,
+  title text not null,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists bottles_location_idx on public.bottles using gist (location);
+create index if not exists bottles_expires_at_idx on public.bottles (expires_at);
+
+create table if not exists public.messages (
+  id uuid primary key default gen_random_uuid(),
+  bottle_id uuid not null references public.bottles (id) on delete cascade,
+  author_id uuid not null references public.profiles (id) on delete cascade,
+  body text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists messages_bottle_id_idx on public.messages (bottle_id);
+
+create table if not exists public.bag_items (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  source_bottle_id uuid references public.bottles (id) on delete set null,
+  title text not null,
+  type_slug text not null,
+  type_name text not null,
+  type_icon text not null,
+  marker_color text not null,
+  messages_snapshot jsonb not null default '[]'::jsonb,
+  collected_at timestamptz not null default now(),
+  collection_reason text not null check (collection_reason in ('manual', 'expired'))
+);
+
+create unique index if not exists bag_items_user_bottle_idx
+  on public.bag_items (user_id, source_bottle_id)
+  where source_bottle_id is not null;
+
+create index if not exists bag_items_user_id_idx on public.bag_items (user_id);
+
+create or replace function public.set_bottle_expires_at()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  hours integer;
+begin
+  select duration_hours into hours
+  from public.bottle_types
+  where id = new.bottle_type_id;
+
+  new.expires_at := now() + (hours || ' hours')::interval;
+  return new;
+end;
+$$;
+
+drop trigger if exists bottles_set_expires_at on public.bottles;
+create trigger bottles_set_expires_at
+  before insert on public.bottles
+  for each row
+  execute function public.set_bottle_expires_at();
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, display_name)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1), 'Sailor')
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row
+  execute function public.handle_new_user();
+
+alter table public.profiles enable row level security;
+alter table public.bottle_types enable row level security;
+alter table public.bottles enable row level security;
+alter table public.messages enable row level security;
+alter table public.bag_items enable row level security;
+
+drop policy if exists "Profiles are viewable by authenticated users" on public.profiles;
+create policy "Profiles are viewable by authenticated users"
+  on public.profiles for select to authenticated using (true);
+
+drop policy if exists "Users can update own profile" on public.profiles;
+create policy "Users can update own profile"
+  on public.profiles for update to authenticated
+  using (auth.uid() = id) with check (auth.uid() = id);
+
+drop policy if exists "Bottle types are viewable by authenticated users" on public.bottle_types;
+create policy "Bottle types are viewable by authenticated users"
+  on public.bottle_types for select to authenticated using (true);
+
+drop policy if exists "Bottles viewable by authenticated users" on public.bottles;
+create policy "Bottles viewable by authenticated users"
+  on public.bottles for select to authenticated using (true);
+
+drop policy if exists "Authenticated users can insert bottles" on public.bottles;
+create policy "Authenticated users can insert bottles"
+  on public.bottles for insert to authenticated with check (creator_id = auth.uid());
+
+drop policy if exists "Creators can delete own bottles" on public.bottles;
+create policy "Creators can delete own bottles"
+  on public.bottles for delete to authenticated using (creator_id = auth.uid());
+
+drop policy if exists "Users can view own bag items" on public.bag_items;
+create policy "Users can view own bag items"
+  on public.bag_items for select to authenticated using (user_id = auth.uid());
+
+drop policy if exists "Users can delete own bag items" on public.bag_items;
+create policy "Users can delete own bag items"
+  on public.bag_items for delete to authenticated using (user_id = auth.uid());
+
+-- ── 004 schema changes ──────────────────────────────────────────────────────
 
 -- Profiles: bio
 alter table public.profiles
@@ -55,6 +226,20 @@ update public.bottle_types set
   icon = '🔒',
   marker_color = '#a78bfa'
 where slug = 'treasure';
+
+-- Fresh installs: seed new catalog when legacy slugs were never present
+insert into public.bottle_types (slug, name, description, duration_hours, icon, marker_color, cap_cost, is_sealed)
+select v.slug, v.name, v.description, v.duration_hours, v.icon, v.marker_color, v.cap_cost, v.is_sealed
+from (values
+  ('basic-day', '1 Day', 'Quick notes that wash away in a day', 24, '🍾', '#60a5fa', 10, false),
+  ('basic-week', '1 Week', 'Conversations that last a week', 168, '🪵', '#34d399', 50, false),
+  ('basic-month', '1 Month', 'Long stories that last 30 days', 720, '🌊', '#fbbf24', 120, false),
+  ('sealed', 'Sealed', 'Password-protected bottle — lasts 7 days', 168, '🔒', '#a78bfa', 75, true)
+) as v(slug, name, description, duration_hours, icon, marker_color, cap_cost, is_sealed)
+where not exists (
+  select 1 from public.bottle_types
+  where slug in ('basic-day', 'basic-week', 'basic-month', 'sealed')
+);
 
 -- Bottles: sealed support
 alter table public.bottles
