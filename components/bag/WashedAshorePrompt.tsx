@@ -29,7 +29,11 @@ export default function WashedAshorePrompt({ onCollected }: Props) {
   const current = queue.find((b) => !dismissed.has(b.id));
   if (!current) return null;
 
-  const dismiss = () => setDismissed((s) => new Set(s).add(current.id));
+  const dismiss = async () => {
+    const supabase = getSupabase();
+    await supabase.rpc("dismiss_washed_ashore", { p_bottle_id: current.id });
+    setDismissed((s) => new Set(s).add(current.id));
+  };
 
   const keep = async () => {
     setLoading(current.id);
