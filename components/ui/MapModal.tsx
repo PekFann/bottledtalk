@@ -33,7 +33,6 @@ type MapModalProps = {
   headerBelow?: ReactNode;
   children: ReactNode;
   maxWidth?: keyof typeof maxWidthClass;
-  align?: "sheet" | "center";
   panelClassName?: string;
   bodyClassName?: string;
   headerSticky?: boolean;
@@ -47,17 +46,11 @@ export default function MapModal({
   headerBelow,
   children,
   maxWidth = "lg",
-  align = "sheet",
   panelClassName = "",
   bodyClassName = "p-5",
   headerSticky = false,
   panelScroll = false,
 }: MapModalProps) {
-  const alignClass =
-    align === "center"
-      ? "items-center"
-      : "items-end sm:items-center";
-
   const panelBase = panelScroll
     ? `w-full ${maxWidthClass[maxWidth]} rounded-xl game-panel-light overflow-y-auto flex flex-col ${panelClassName}`
     : `w-full ${maxWidthClass[maxWidth]} rounded-xl game-panel-light overflow-hidden flex flex-col ${panelClassName}`;
@@ -67,13 +60,11 @@ export default function MapModal({
     : "glass-header rounded-t-xl";
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex justify-center bg-black/40 px-4 pb-4 sm:pb-0 ${alignClass}`}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <motion.div
         className={panelBase}
-        initial={{ y: align === "center" ? 0 : 40, opacity: 0, scale: align === "center" ? 0.95 : 1 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", stiffness: 320, damping: 30 }}
       >
         <div className={headerClass}>

@@ -47,7 +47,6 @@ export default function SignalTowerExtendModal({
       onClose={onClose}
       title="Extend signal tower"
       maxWidth="sm"
-      align="center"
     >
       <div className="glass-card rounded-lg p-4 mb-4">
         <p className="text-sm text-slate-700">

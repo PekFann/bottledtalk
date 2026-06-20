@@ -44,6 +44,14 @@ body {
   box-shadow: 0 2px 12px rgba(71, 85, 105, 0.08);
 }
 
+.game-hud-bar {
+  background: rgba(250, 248, 245, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(91, 163, 184, 0.25);
+  box-shadow: 0 2px 12px rgba(71, 85, 105, 0.08);
+}
+
 .game-panel {
   background: rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(20px);

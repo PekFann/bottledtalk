@@ -208,15 +208,21 @@ export default function ShopModal({
                               {type.icon}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="font-medium text-sm text-slate-900">{type.name}</p>
-                              <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{type.description}</p>
-                              <p className="text-xs text-slate-500 mt-1">
-                                {formatDuration(type.duration_hours)}
-                                {type.is_sealed ? " · PIN locked" : ""}
-                              </p>
-                              <p className="text-xs font-medium text-amber-700 mt-1">
-                                {type.cap_cost} caps
-                              </p>
+                              <p className="font-semibold text-lg text-slate-900">{type.name}</p>
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-2">{type.description}</p>
+                              <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                                <span className="rounded-full bg-sky-500 px-2.5 py-0.5 text-xs font-semibold text-white">
+                                  {formatDuration(type.duration_hours)}
+                                </span>
+                                <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-semibold text-white">
+                                  {type.cap_cost} caps
+                                </span>
+                                {type.is_sealed && (
+                                  <span className="rounded-full bg-violet-500 px-2.5 py-0.5 text-xs font-semibold text-white">
+                                    PIN locked
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </button>
                         );

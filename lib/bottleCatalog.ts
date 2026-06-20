@@ -9,7 +9,7 @@ type CatalogEntry = Pick<
 const SHOP_CATALOG: CatalogEntry[] = [
   {
     slug: "basic-day",
-    name: "1 Day",
+    name: "Dawn Drifter",
     description: "A whisper carried on the tide, gone by morning",
     duration_hours: 24,
     icon: "🍾",
@@ -19,7 +19,7 @@ const SHOP_CATALOG: CatalogEntry[] = [
   },
   {
     slug: "basic-week",
-    name: "1 Week",
+    name: "Harbor Letter",
     description: "Words that drift a week before the sea claims them",
     duration_hours: 168,
     icon: "🪵",
@@ -29,7 +29,7 @@ const SHOP_CATALOG: CatalogEntry[] = [
   },
   {
     slug: "basic-month",
-    name: "1 Month",
+    name: "Deep Tide Chronicle",
     description: "A long tale anchored for a month upon the waves",
     duration_hours: 720,
     icon: "🌊",
@@ -39,7 +39,7 @@ const SHOP_CATALOG: CatalogEntry[] = [
   },
   {
     slug: "sealed",
-    name: "Sealed",
+    name: "Cipher Bottle",
     description: "Locked with a secret — only the worthy may open its depths",
     duration_hours: 168,
     icon: "🔒",

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LogOut, Menu, User } from "lucide-react";
 
 type Props = {
@@ -13,6 +14,11 @@ type Props = {
 export default function UserMenu({ displayName, email, userId }: Props) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (userId) router.prefetch(`/profile/${userId}`);
+  }, [userId, router]);
 
   useEffect(() => {
     if (!open) return;

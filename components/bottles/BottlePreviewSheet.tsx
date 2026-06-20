@@ -8,7 +8,7 @@ import type { NearbyBottle } from "@/lib/types";
 import { getCatalogDescription } from "@/lib/bottleCatalog";
 import { useLiveCountdown } from "@/lib/hooks/useLiveCountdown";
 import BottleImage from "@/components/bottles/BottleImage";
-import { MapBottomSheet, MapModalCloseButton } from "@/components/ui/MapModal";
+import MapModal from "@/components/ui/MapModal";
 
 type Props = {
   bottle: NearbyBottle;
@@ -29,25 +29,20 @@ export default function BottlePreviewSheet({ bottle, onClose, footprintId }: Pro
   }, [router, href]);
 
   return (
-    <MapBottomSheet>
-      <div className="glass-card rounded-lg p-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <BottleImage size="md" />
-            <div>
-              <h2 className="font-bold text-slate-900">{bottle.title}</h2>
-              <p className="text-sm text-slate-600">
-                {bottle.type_name} · {bottle.creator_name}
-              </p>
-            </div>
-          </div>
-          <MapModalCloseButton onClick={onClose} />
-        </div>
-
+    <MapModal
+      onClose={onClose}
+      title={bottle.title}
+      subtitle={
+        <p className="text-sm text-slate-600 mt-0.5">
+          {bottle.type_name} · {bottle.creator_name}
+        </p>
+      }
+      maxWidth="md"
+    >
+      <div className="glass-card rounded-lg p-3 flex items-center gap-3">
+        <BottleImage size="md" />
         {catalogLine && (
-          <p className="mt-3 text-sm italic text-slate-600 leading-relaxed">
-            {catalogLine}
-          </p>
+          <p className="text-sm italic text-slate-600 leading-relaxed">{catalogLine}</p>
         )}
       </div>
 
@@ -65,6 +60,6 @@ export default function BottlePreviewSheet({ bottle, onClose, footprintId }: Pro
       >
         Open conversation
       </Link>
-    </MapBottomSheet>
+    </MapModal>
   );
 }
