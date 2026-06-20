@@ -87,6 +87,7 @@ body {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  font-family: var(--font-handwriting), "Segoe Print", cursive;
 }
 
 .btn-primary {

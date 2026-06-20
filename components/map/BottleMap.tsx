@@ -4,9 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } fr
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox";
 import type { MapEvent, MapRef, ViewStateChangeEvent } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { NearbyBottle, MapStackItem, SignalTower, MapDecoration } from "@/lib/types";
+import type { NearbyBottle, MapStackItem, SignalTower, MapDecoration, MapMarker } from "@/lib/types";
 import { CLUSTER_RADIUS_M, TOWER_PROXIMITY_M } from "@/lib/types";
-import { markerZIndex, sortMarkersByDepth } from "@/lib/placement";
+import {
+  getMarkerLat,
+  getMapMarkerDepthRank,
+  markerZIndex,
+  sortByMapDepthLat,
+  sortMarkersByDepth,
+} from "@/lib/placement";
 import {
   createDiscoveryCircleGeoJSON,
   createDiscoveryMaskGeoJSON,
@@ -127,10 +133,23 @@ export default function BottleMap({
     [bottles, towers]
   );
 
-  const sortedDecorations = useMemo(
-    () => [...decorations].sort((a, b) => a.lat - b.lat),
-    [decorations]
-  );
+  type DepthItem =
+    | { kind: "marker"; marker: MapMarker }
+    | { kind: "decoration"; decoration: MapDecoration };
+
+  const depthItems = useMemo(() => {
+    const items: DepthItem[] = [
+      ...markers.map((marker) => ({ kind: "marker" as const, marker })),
+      ...decorations.map((decoration) => ({ kind: "decoration" as const, decoration })),
+    ];
+    return items.sort((a, b) => {
+      const latA = a.kind === "marker" ? getMarkerLat(a.marker) : a.decoration.lat;
+      const latB = b.kind === "marker" ? getMarkerLat(b.marker) : b.decoration.lat;
+      const rankA = a.kind === "decoration" ? 2 : getMapMarkerDepthRank(a.marker);
+      const rankB = b.kind === "decoration" ? 2 : getMapMarkerDepthRank(b.marker);
+      return sortByMapDepthLat(latA, latB, rankA, rankB);
+    });
+  }, [markers, decorations]);
 
   const resolveClickAtPoint = useCallback(
     (point: { x: number; y: number }) => {
@@ -326,7 +345,21 @@ export default function BottleMap({
         </div>
       </Marker>
 
-      {markers.map((m, index) => {
+      {depthItems.map((item, index) => {
+        if (item.kind === "decoration") {
+          return (
+            <DecorationMarker
+              key={`decoration-${item.decoration.id}`}
+              decoration={item.decoration}
+              zIndex={markerZIndex(index)}
+              onClick={() => {
+                if (!placementMode) onSelectDecoration?.(item.decoration);
+              }}
+            />
+          );
+        }
+
+        const m = item.marker;
         const selected =
           m.kind === "single" &&
           m.item.kind === "bottle" &&
@@ -368,17 +401,6 @@ export default function BottleMap({
           />
         );
       })}
-
-      {sortedDecorations.map((decoration, index) => (
-        <DecorationMarker
-          key={`decoration-${decoration.id}`}
-          decoration={decoration}
-          zIndex={markerZIndex(markers.length + index)}
-          onClick={() => {
-            if (!placementMode) onSelectDecoration?.(decoration);
-          }}
-        />
-      ))}
     </Map>
     </div>
   );

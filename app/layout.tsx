@@ -37,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={patrickHand.variable}>
-      <body className="antialiased font-handwriting">
+      <body className="antialiased font-sans">
         {children}
         <ServiceWorkerRegister />
       </body>

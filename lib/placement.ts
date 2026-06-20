@@ -49,8 +49,27 @@ export function markerZIndex(index: number, selected = false): number {
   return index + 1 + (selected ? 1000 : 0);
 }
 
+function markerKindDepthRank(marker: MapMarker): number {
+  if (marker.kind === "cluster") return 1;
+  return marker.item.kind === "tower" ? 0 : 1;
+}
+
+export function getMapMarkerDepthRank(marker: MapMarker): number {
+  return markerKindDepthRank(marker);
+}
+
 export function sortMarkersByDepth(markers: MapMarker[]): MapMarker[] {
-  return [...markers].sort((a, b) => getMarkerLat(a) - getMarkerLat(b));
+  return [...markers].sort((a, b) => {
+    const latDiff = getMarkerLat(b) - getMarkerLat(a);
+    if (latDiff !== 0) return latDiff;
+    return markerKindDepthRank(a) - markerKindDepthRank(b);
+  });
+}
+
+export function sortByMapDepthLat(latA: number, latB: number, rankA: number, rankB: number): number {
+  const latDiff = latB - latA;
+  if (latDiff !== 0) return latDiff;
+  return rankA - rankB;
 }
 
 export function placementLabel(intent: PlacementIntent): string {

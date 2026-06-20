@@ -29,7 +29,7 @@ type Props = {
 };
 
 const fieldClassName =
-  "font-handwriting w-full rounded-lg border-2 border-slate-300 bg-white px-4 py-3 text-lg text-slate-900 placeholder:text-slate-500 shadow-sm focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/40 game-input";
+  "w-full rounded-lg border-2 border-slate-300 bg-white px-4 py-3 text-lg text-slate-900 placeholder:text-slate-500 shadow-sm focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/40 game-input";
 
 export default function ShopModal({
   bottleTypes,
