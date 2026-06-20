@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } fr
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox";
 import type { MapEvent, MapRef, ViewStateChangeEvent } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { NearbyBottle, MapStackItem, SignalTower } from "@/lib/types";
+import type { NearbyBottle, MapStackItem, SignalTower, MapDecoration } from "@/lib/types";
 import { CLUSTER_RADIUS_M, TOWER_PROXIMITY_M } from "@/lib/types";
+import { markerZIndex, sortMarkersByDepth } from "@/lib/placement";
 import {
   createDiscoveryCircleGeoJSON,
   createDiscoveryMaskGeoJSON,
@@ -21,6 +22,7 @@ import { applyGreyRoadColors } from "@/lib/mapRoadColors";
 import BottleMarker from "@/components/bottles/BottleMarker";
 import ClusterMarker from "@/components/bottles/ClusterMarker";
 import SignalTowerMarker from "@/components/map/SignalTowerMarker";
+import DecorationMarker from "@/components/map/DecorationMarker";
 import { Footprints } from "lucide-react";
 
 const MAP_STYLE = "mapbox://styles/mapbox/outdoors-v12";
@@ -46,11 +48,15 @@ type Props = {
   anchorLocation: { lat: number; lng: number };
   bottles: NearbyBottle[];
   towers?: SignalTower[];
+  decorations?: MapDecoration[];
   currentUserId?: string;
   footprintMode?: boolean;
+  placementMode?: boolean;
   onSelectBottle: (bottle: NearbyBottle) => void;
   onSelectStack: (items: MapStackItem[]) => void;
   onSelectTower?: (tower: SignalTower) => void;
+  onSelectDecoration?: (decoration: MapDecoration) => void;
+  onMapCenterChange?: (lat: number, lng: number) => void;
   radiusM: number;
   selectedBottleId?: string | null;
 };
@@ -70,11 +76,15 @@ export default function BottleMap({
   anchorLocation,
   bottles,
   towers = [],
+  decorations = [],
   currentUserId,
   footprintMode = false,
+  placementMode = false,
   onSelectBottle,
   onSelectStack,
   onSelectTower,
+  onSelectDecoration,
+  onMapCenterChange,
   radiusM,
   selectedBottleId = null,
 }: Props) {
@@ -111,12 +121,19 @@ export default function BottleMap({
   }, [towers, currentUserId]);
 
   const markers = useMemo(
-    () => clusterMapItems(bottles, towers, CLUSTER_RADIUS_M),
+    () => sortMarkersByDepth(clusterMapItems(bottles, towers, CLUSTER_RADIUS_M)),
     [bottles, towers]
+  );
+
+  const sortedDecorations = useMemo(
+    () => [...decorations].sort((a, b) => a.lat - b.lat),
+    [decorations]
   );
 
   const resolveClickAtPoint = useCallback(
     (point: { x: number; y: number }) => {
+      if (placementMode) return;
+
       const map = mapRef.current?.getMap();
       if (!map) return;
 
@@ -136,7 +153,7 @@ export default function BottleMap({
         onSelectTower?.(item.tower);
       }
     },
-    [allItems, currentUserId, onSelectBottle, onSelectStack, onSelectTower]
+    [allItems, currentUserId, onSelectBottle, onSelectStack, onSelectTower, placementMode]
   );
 
   const handleMarkerClick = useCallback(
@@ -209,6 +226,15 @@ export default function BottleMap({
     setViewState({ longitude, latitude, zoom, pitch, bearing });
   }, []);
 
+  const handleMoveEnd = useCallback(
+    (evt: ViewStateChangeEvent) => {
+      if (onMapCenterChange) {
+        onMapCenterChange(evt.viewState.latitude, evt.viewState.longitude);
+      }
+    },
+    [onMapCenterChange]
+  );
+
   if (!token) {
     return (
       <div className="flex h-full items-center justify-center px-6 pt-16 text-center text-slate-600">
@@ -228,6 +254,7 @@ export default function BottleMap({
       mapStyle={MAP_STYLE}
       onLoad={handleMapLoad}
       onMove={handleMove}
+      onMoveEnd={handleMoveEnd}
     >
       <Source id="discovery-mask" type="geojson" data={maskGeoJSON}>
         <Layer
@@ -297,11 +324,19 @@ export default function BottleMap({
       </Marker>
 
       {markers.map((m) => {
+        const lat = m.kind === "cluster" ? m.stack.lat : m.item.kind === "bottle" ? m.item.bottle.lat : m.item.tower.lat;
+        const selected =
+          m.kind === "single" &&
+          m.item.kind === "bottle" &&
+          m.item.bottle.id === selectedBottleId;
+        const zIndex = markerZIndex(lat, selected);
+
         if (m.kind === "cluster") {
           return (
             <ClusterMarker
               key={m.stack.id}
               stack={m.stack}
+              zIndex={zIndex}
               onClick={() => onSelectStack(m.stack.items)}
             />
           );
@@ -314,6 +349,7 @@ export default function BottleMap({
               key={`bottle-${bottle.id}`}
               bottle={bottle}
               isSelected={bottle.id === selectedBottleId}
+              zIndex={zIndex}
               onClick={handleMarkerClick}
             />
           );
@@ -325,10 +361,22 @@ export default function BottleMap({
             key={`tower-${tower.id}`}
             tower={tower}
             isOwner={tower.owner_id === currentUserId}
+            zIndex={zIndex}
             onClick={handleMarkerClick}
           />
         );
       })}
+
+      {sortedDecorations.map((decoration) => (
+        <DecorationMarker
+          key={`decoration-${decoration.id}`}
+          decoration={decoration}
+          zIndex={markerZIndex(decoration.lat)}
+          onClick={() => {
+            if (!placementMode) onSelectDecoration?.(decoration);
+          }}
+        />
+      ))}
     </Map>
   );
 }

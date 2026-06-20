@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { SignalTower } from "@/lib/types";
 import { TOWER_EXTEND_7D_COST, TOWER_EXTEND_30D_COST } from "@/lib/types";
 import MapModal from "@/components/ui/MapModal";
+import LiveCountdown from "@/components/ui/LiveCountdown";
 
 type Props = {
   tower: SignalTower;
@@ -47,12 +48,13 @@ export default function SignalTowerExtendModal({
       onClose={onClose}
       title="Extend signal tower"
       maxWidth="sm"
-    >
-      <div className="glass-card rounded-lg p-4 mb-4">
-        <p className="text-sm text-slate-700">
-          Expires {new Date(tower.expires_at).toLocaleDateString()}
+      subtitle={
+        <p className="text-sm text-slate-600 mt-1">
+          Expires in{" "}
+          <LiveCountdown expiresAt={tower.expires_at} className="bg-sky-100 text-sky-800" />
         </p>
-      </div>
+      }
+    >
       {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
       <div className="space-y-2">
         <button type="button" disabled={submitting || bottleCaps < TOWER_EXTEND_7D_COST} onClick={() => extend(7)} className="w-full btn-primary-block py-2.5 text-sm">

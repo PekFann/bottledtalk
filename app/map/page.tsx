@@ -10,8 +10,10 @@ import type {
   SignalTower,
   Footprint,
   MapAnchor,
+  MapDecoration,
 } from "@/lib/types";
 import { FOOTPRINT_RADIUS_M, DEFAULT_BAG_SLOTS } from "@/lib/types";
+import type { PlacementIntent } from "@/lib/placement";
 import { fetchDiscoveryRadius, shouldReloadMapAtLocation } from "@/lib/discovery";
 import BottleMap from "@/components/map/BottleMap";
 import { getShopBottleTypes } from "@/lib/bottleCatalog";
@@ -27,12 +29,16 @@ import CastSplash from "@/components/bottles/CastSplash";
 import FootprintModal from "@/components/footprint/FootprintModal";
 import FriendsModal from "@/components/friends/FriendsModal";
 import SignalTowerExtendModal from "@/components/shop/SignalTowerExtendModal";
+import MapPlacementOverlay from "@/components/map/MapPlacementOverlay";
+import PlacementConfirmModal from "@/components/map/PlacementConfirmModal";
+import DecorationPreviewModal from "@/components/map/DecorationPreviewModal";
 
 export default function MapPage() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [bottles, setBottles] = useState<NearbyBottle[]>([]);
   const [towers, setTowers] = useState<SignalTower[]>([]);
+  const [decorations, setDecorations] = useState<MapDecoration[]>([]);
   const [bottleTypes, setBottleTypes] = useState<BottleType[]>([]);
   const [selectedBottle, setSelectedBottle] = useState<NearbyBottle | null>(null);
   const [stackItems, setStackItems] = useState<MapStackItem[] | null>(null);
@@ -41,6 +47,10 @@ export default function MapPage() {
   const [showFriends, setShowFriends] = useState(false);
   const [showFootprints, setShowFootprints] = useState(false);
   const [selectedTower, setSelectedTower] = useState<SignalTower | null>(null);
+  const [selectedDecoration, setSelectedDecoration] = useState<MapDecoration | null>(null);
+  const [placementIntent, setPlacementIntent] = useState<PlacementIntent | null>(null);
+  const [placementPin, setPlacementPin] = useState<{ lat: number; lng: number } | null>(null);
+  const [showPlacementConfirm, setShowPlacementConfirm] = useState(false);
   const [mapAnchor, setMapAnchor] = useState<MapAnchor | null>(null);
   const [discoveryRadius, setDiscoveryRadius] = useState(2000);
   const [loading, setLoading] = useState(true);
@@ -88,7 +98,7 @@ export default function MapPage() {
 
       if (!isFootprint) setDiscoveryRadius(radius);
 
-      const [bottlesRes, towersRes] = await Promise.all([
+      const [bottlesRes, towersRes, decorationsRes] = await Promise.all([
         supabase.rpc("nearby_bottles", {
           lat,
           lng,
@@ -99,10 +109,16 @@ export default function MapPage() {
           lng,
           radius_m: isFootprint ? FOOTPRINT_RADIUS_M : null,
         }),
+        supabase.rpc("nearby_decorations", {
+          lat,
+          lng,
+          radius_m: radius,
+        }),
       ]);
 
       if (!bottlesRes.error && bottlesRes.data) setBottles(bottlesRes.data);
       if (!towersRes.error && towersRes.data) setTowers(towersRes.data);
+      if (!decorationsRes.error && decorationsRes.data) setDecorations(decorationsRes.data);
       if (options?.showLoading) setLoading(false);
     },
     [getSupabase]
@@ -228,6 +244,38 @@ export default function MapPage() {
     setCastSplash({ show: false, cost: 0 });
   }, []);
 
+  const handleStartPlacement = useCallback(
+    (intent: PlacementIntent) => {
+      if (!anchorLocation) return;
+      setShowShop(false);
+      setPlacementIntent(intent);
+      setPlacementPin({ lat: anchorLocation.lat, lng: anchorLocation.lng });
+      setShowPlacementConfirm(false);
+    },
+    [anchorLocation]
+  );
+
+  const cancelPlacement = useCallback(() => {
+    setPlacementIntent(null);
+    setPlacementPin(null);
+    setShowPlacementConfirm(false);
+  }, []);
+
+  const handlePlacementSuccess = useCallback(
+    async (capCost: number, intent: PlacementIntent) => {
+      setPlacementIntent(null);
+      setPlacementPin(null);
+      setShowPlacementConfirm(false);
+      if (intent.kind === "bottle") {
+        await handleBottleSuccess(capCost);
+      } else {
+        await handlePurchase(capCost);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
   const handleFootprintSelect = (fp: Footprint) => {
     lastGpsReloadRef.current = null;
     setMapAnchor({
@@ -287,16 +335,32 @@ export default function MapPage() {
             anchorLocation={anchorLocation}
             bottles={bottles}
             towers={towers}
+            decorations={decorations}
             currentUserId={userId ?? undefined}
             footprintMode={footprintMode}
+            placementMode={!!placementIntent}
             onSelectBottle={setSelectedBottle}
             onSelectStack={(items) => setStackItems(items)}
             onSelectTower={(tower) => {
               if (tower.owner_id === userId) setSelectedTower(tower);
             }}
+            onSelectDecoration={setSelectedDecoration}
+            onMapCenterChange={(lat, lng) => {
+              if (placementIntent) setPlacementPin({ lat, lng });
+            }}
             radiusM={effectiveRadius}
             selectedBottleId={selectedBottle?.id ?? null}
           />
+
+          {placementIntent && placementPin && anchorLocation && (
+            <MapPlacementOverlay
+              anchor={anchorLocation}
+              radiusM={effectiveRadius}
+              placementPin={placementPin}
+              onCancel={cancelPlacement}
+              onConfirm={() => setShowPlacementConfirm(true)}
+            />
+          )}
 
           {loading && bottles.length === 0 && (
             <div className="absolute bottom-56 left-1/2 -translate-x-1/2 z-10 rounded-full game-panel-pastel px-4 py-2 text-sm text-slate-700 shadow">
@@ -316,7 +380,7 @@ export default function MapPage() {
         </div>
       )}
 
-      {userLocation && (
+      {userLocation && !placementIntent && (
         <MapActionBar
           onOpenFriends={() => setShowFriends(true)}
           onOpenShop={() => setShowShop(true)}
@@ -352,19 +416,10 @@ export default function MapPage() {
       {showShop && userLocation && (
         <ShopModal
           bottleTypes={getShopBottleTypes(bottleTypes)}
-          location={userLocation}
           bottleCaps={bottleCaps}
           footprintMode={footprintMode}
           onClose={() => setShowShop(false)}
-          onBottleSuccess={handleBottleSuccess}
-          onTowerSuccess={async (cost) => {
-            setShowShop(false);
-            await handlePurchase(cost);
-          }}
-          onFootprintSuccess={async (cost) => {
-            setShowShop(false);
-            await handlePurchase(cost);
-          }}
+          onStartPlacement={handleStartPlacement}
         />
       )}
 
@@ -396,6 +451,25 @@ export default function MapPage() {
             await handlePurchase(cost);
             setSelectedTower(null);
           }}
+        />
+      )}
+
+      {selectedDecoration && (
+        <DecorationPreviewModal
+          decoration={selectedDecoration}
+          onClose={() => setSelectedDecoration(null)}
+        />
+      )}
+
+      {showPlacementConfirm && placementIntent && placementPin && anchorLocation && (
+        <PlacementConfirmModal
+          intent={placementIntent}
+          placement={placementPin}
+          anchor={anchorLocation}
+          radiusM={effectiveRadius}
+          onBack={() => setShowPlacementConfirm(false)}
+          onClose={cancelPlacement}
+          onSuccess={(capCost) => void handlePlacementSuccess(capCost, placementIntent)}
         />
       )}
 

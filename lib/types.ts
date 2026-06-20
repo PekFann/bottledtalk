@@ -149,6 +149,18 @@ export type SignalTower = {
   owner_name: string;
 };
 
+export type MapDecoration = {
+  id: string;
+  creator_id: string;
+  lat: number;
+  lng: number;
+  title: string;
+  description: string;
+  expires_at: string;
+  created_at: string;
+  creator_name: string;
+};
+
 export type Footprint = {
   id: string;
   user_id: string;
@@ -195,4 +207,6 @@ export const TOWER_EXTEND_7D_COST = 35;
 export const TOWER_EXTEND_30D_COST = 90;
 export const FOOTPRINT_COST = 100;
 export const FOOTPRINT_DAYS = 30;
+export const DECORATION_COST = 50;
+export const DECORATION_DAYS = 30;
 export const SEALED_BOTTLE_COST = 75;

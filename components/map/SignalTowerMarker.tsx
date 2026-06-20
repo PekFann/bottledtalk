@@ -9,18 +9,24 @@ type Props = {
   tower: SignalTower;
   isOwner: boolean;
   onClick: (e: MouseEvent) => void;
+  zIndex?: number;
 };
 
-export default function SignalTowerMarker({ tower, isOwner, onClick }: Props) {
+export default function SignalTowerMarker({ tower, isOwner, onClick, zIndex = 0 }: Props) {
   return (
-    <Marker longitude={tower.lng} latitude={tower.lat} anchor="bottom">
+    <Marker
+      longitude={tower.lng}
+      latitude={tower.lat}
+      anchor="bottom"
+      style={{ zIndex }}
+    >
       <button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
           onClick(e);
         }}
-        className={`relative z-20 flex flex-col items-center ${isOwner ? "cursor-pointer" : "cursor-default"}`}
+        className={`relative flex flex-col items-center ${isOwner ? "cursor-pointer" : "cursor-default"}`}
         aria-label={isOwner ? "Your signal tower" : "Signal tower"}
       >
         <div

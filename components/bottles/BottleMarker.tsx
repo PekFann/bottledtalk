@@ -11,11 +11,17 @@ type Props = {
   bottle: NearbyBottle;
   onClick: (e: MouseEvent) => void;
   isSelected?: boolean;
+  zIndex?: number;
 };
 
-export default function BottleMarker({ bottle, onClick, isSelected = false }: Props) {
+export default function BottleMarker({ bottle, onClick, isSelected = false, zIndex = 0 }: Props) {
   return (
-    <Marker longitude={bottle.lng} latitude={bottle.lat} anchor="bottom">
+    <Marker
+      longitude={bottle.lng}
+      latitude={bottle.lat}
+      anchor="bottom"
+      style={{ zIndex }}
+    >
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -48,7 +54,7 @@ export default function BottleMarker({ bottle, onClick, isSelected = false }: Pr
         </div>
 
         <motion.div
-          className="relative z-10"
+          className="relative"
           initial={false}
           animate={
             isSelected

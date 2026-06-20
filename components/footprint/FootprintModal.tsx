@@ -5,6 +5,7 @@ import { Footprints } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Footprint } from "@/lib/types";
 import MapModal from "@/components/ui/MapModal";
+import LiveCountdown from "@/components/ui/LiveCountdown";
 
 type Props = {
   onClose: () => void;
@@ -63,9 +64,9 @@ export default function FootprintModal({ onClose, onSelect, onOpenShop }: Props)
             <Footprints className="h-5 w-5 text-slate-500 shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="font-medium text-sm text-slate-900 truncate">{fp.name}</p>
-              <p className="text-xs text-slate-500">
-                Until {new Date(fp.expires_at).toLocaleDateString()}
-              </p>
+              <div className="mt-1">
+                <LiveCountdown expiresAt={fp.expires_at} />
+              </div>
             </div>
             <span className="text-xs font-medium text-sky-600 shrink-0">Go</span>
           </button>

@@ -8,11 +8,17 @@ import type { MapStack } from "@/lib/types";
 type Props = {
   stack: MapStack;
   onClick: (e: MouseEvent) => void;
+  zIndex?: number;
 };
 
-export default function ClusterMarker({ stack, onClick }: Props) {
+export default function ClusterMarker({ stack, onClick, zIndex = 0 }: Props) {
   return (
-    <Marker longitude={stack.lng} latitude={stack.lat} anchor="center">
+    <Marker
+      longitude={stack.lng}
+      latitude={stack.lat}
+      anchor="center"
+      style={{ zIndex }}
+    >
       <motion.button
         type="button"
         onClick={(e) => {
