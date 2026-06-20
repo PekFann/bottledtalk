@@ -156,6 +156,7 @@ export type MapDecoration = {
   lng: number;
   title: string;
   description: string;
+  decoration_type: string;
   expires_at: string;
   created_at: string;
   creator_name: string;

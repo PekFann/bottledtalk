@@ -15,6 +15,11 @@ import {
 } from "@/lib/types";
 import { formatDuration } from "@/lib/geo";
 import type { PlacementIntent } from "@/lib/placement";
+import {
+  DECORATION_CATEGORIES,
+  getDecorationType,
+  getDecorationsByCategory,
+} from "@/lib/decorationCatalog";
 import PinInput from "@/components/ui/PinInput";
 
 type Tab = "bottles" | "tower" | "footprint" | "decoration";
@@ -47,11 +52,13 @@ export default function ShopModal({
   const [pin, setPin] = useState("");
   const [message, setMessage] = useState("");
   const [footprintName, setFootprintName] = useState("");
+  const [selectedDecorationTypeId, setSelectedDecorationTypeId] = useState("");
   const [decorationTitle, setDecorationTitle] = useState("");
   const [decorationDescription, setDecorationDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const selectedType = shopBottleTypes.find((t) => t.id === selectedTypeId);
+  const selectedDecorationType = getDecorationType(selectedDecorationTypeId);
   const isSealed = selectedType?.is_sealed ?? false;
   const bottleCost = selectedType?.cap_cost ?? 0;
   const canAffordBottle = selectedType ? bottleCaps >= bottleCost : false;
@@ -67,6 +74,23 @@ export default function ShopModal({
 
   const goBackToBottlePicker = () => {
     selectBottleType("");
+  };
+
+  const selectDecorationType = (typeId: string) => {
+    setSelectedDecorationTypeId(typeId);
+    setDecorationTitle("");
+    setDecorationDescription("");
+    setError(null);
+  };
+
+  const goBackToDecorationPicker = () => {
+    selectDecorationType("");
+  };
+
+  const resetDecorationState = () => {
+    setSelectedDecorationTypeId("");
+    setDecorationTitle("");
+    setDecorationDescription("");
   };
 
   const startBottlePlacement = (e: React.FormEvent) => {
@@ -103,9 +127,17 @@ export default function ShopModal({
 
   const startDecorationPlacement = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!decorationTitle.trim() || !decorationDescription.trim() || bottleCaps < DECORATION_COST) return;
+    if (
+      !selectedDecorationTypeId ||
+      !decorationTitle.trim() ||
+      !decorationDescription.trim() ||
+      bottleCaps < DECORATION_COST
+    ) {
+      return;
+    }
     onStartPlacement({
       kind: "decoration",
+      decorationTypeId: selectedDecorationTypeId,
       title: decorationTitle.trim(),
       description: decorationDescription.trim(),
       capCost: DECORATION_COST,
@@ -139,6 +171,7 @@ export default function ShopModal({
                 setTab(t.id);
                 setError(null);
                 if (t.id !== "bottles") goBackToBottlePicker();
+                if (t.id !== "decoration") resetDecorationState();
               }}
               className={`flex-1 min-w-[4.5rem] py-2.5 text-xs sm:text-sm font-medium transition-colors ${
                 tab === t.id
@@ -302,29 +335,121 @@ export default function ShopModal({
       )}
 
       {tab === "decoration" && (
-        <form onSubmit={startDecorationPlacement} className="space-y-5 glass-card rounded-xl p-5">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-violet-100">
-            <Sparkles className="h-10 w-10 text-violet-600" strokeWidth={2} />
-          </div>
-          <div className="text-center">
-            <h3 className="font-semibold text-slate-900">Map decoration</h3>
-            <p className="text-sm text-slate-600 mt-2">
-              Leave a poetic marker others can read — no replies, just wonder. Lasts {DECORATION_DAYS} days.
+        <form onSubmit={startDecorationPlacement} className="space-y-5">
+          {!selectedDecorationTypeId ? (
+            <div className="space-y-5">
+              <div className="text-center glass-card rounded-xl p-4">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-violet-100">
+                  <Sparkles className="h-8 w-8 text-violet-600" strokeWidth={2} />
+                </div>
+                <h3 className="font-semibold text-slate-900 mt-3">Map decoration</h3>
+                <p className="text-sm text-slate-600 mt-2">
+                  Pick something to place on the map. Others can read your note — no replies, just wonder. Lasts{" "}
+                  {DECORATION_DAYS} days.
+                </p>
+                <p className="text-sm font-normal text-amber-700 mt-3">{DECORATION_COST} caps each</p>
+              </div>
+
+              {DECORATION_CATEGORIES.map((category) => (
+                <div key={category}>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">{category}</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {getDecorationsByCategory(category).map((type) => {
+                      const affordable = bottleCaps >= DECORATION_COST;
+                      return (
+                        <button
+                          key={type.id}
+                          type="button"
+                          onClick={() => selectDecorationType(type.id)}
+                          disabled={!affordable}
+                          className={`flex flex-col items-center gap-2 rounded-lg glass-card p-3 text-center transition-all ${
+                            affordable ? "hover:border-slate-300" : "opacity-50 cursor-not-allowed"
+                          }`}
+                        >
+                          <div
+                            className="flex h-14 w-14 items-center justify-center rounded-xl text-3xl"
+                            style={{ backgroundColor: `${type.marker_color}22` }}
+                            aria-hidden
+                          >
+                            {type.icon}
+                          </div>
+                          <p className="text-sm font-medium text-slate-900">{type.name}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-5 glass-card rounded-xl p-4">
+              <button
+                type="button"
+                onClick={goBackToDecorationPicker}
+                className="flex items-center gap-1 text-sm font-medium text-sky-600 hover:text-sky-700"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Back
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-3xl"
+                  style={{ backgroundColor: `${selectedDecorationType?.marker_color ?? "#a78bfa"}22` }}
+                  aria-hidden
+                >
+                  {selectedDecorationType?.icon}
+                </div>
+                <p className="text-sm font-semibold text-slate-900">{selectedDecorationType?.name}</p>
+              </div>
+
+              <div>
+                <label htmlFor="dec-title" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Title
+                </label>
+                <input
+                  id="dec-title"
+                  value={decorationTitle}
+                  onChange={(e) => setDecorationTitle(e.target.value)}
+                  maxLength={80}
+                  required
+                  className={fieldClassName}
+                  placeholder="A name for this spot…"
+                />
+              </div>
+              <div>
+                <label htmlFor="dec-desc" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Description
+                </label>
+                <textarea
+                  id="dec-desc"
+                  value={decorationDescription}
+                  onChange={(e) => setDecorationDescription(e.target.value)}
+                  maxLength={300}
+                  required
+                  rows={3}
+                  className={`${fieldClassName} resize-none`}
+                  placeholder="What travelers will read when they find it…"
+                />
+              </div>
+            </div>
+          )}
+
+          {selectedDecorationTypeId && bottleCaps < DECORATION_COST && (
+            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+              Need {DECORATION_COST} caps — you have {bottleCaps}
             </p>
-            <p className="text-sm font-normal text-amber-700 mt-3">{DECORATION_COST} caps</p>
-          </div>
-          <div>
-            <label htmlFor="dec-title" className="block text-sm font-medium text-slate-700 mb-1.5">Title</label>
-            <input id="dec-title" value={decorationTitle} onChange={(e) => setDecorationTitle(e.target.value)} maxLength={80} required className={fieldClassName} placeholder="A name for this spot…" />
-          </div>
-          <div>
-            <label htmlFor="dec-desc" className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
-            <textarea id="dec-desc" value={decorationDescription} onChange={(e) => setDecorationDescription(e.target.value)} maxLength={300} required rows={3} className={`${fieldClassName} resize-none`} placeholder="What travelers will read when they find it…" />
-          </div>
+          )}
           {error && <div className="rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
-          <button type="submit" disabled={bottleCaps < DECORATION_COST} className="w-full btn-primary-block font-medium py-3 disabled:opacity-50">
-            Choose location on map (−{DECORATION_COST} caps)
-          </button>
+          {selectedDecorationTypeId && (
+            <button
+              type="submit"
+              disabled={bottleCaps < DECORATION_COST}
+              className="w-full btn-primary-block font-medium py-3 disabled:opacity-50"
+            >
+              Choose location on map (−{DECORATION_COST} caps)
+            </button>
+          )}
         </form>
       )}
     </MapModal>

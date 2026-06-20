@@ -1,4 +1,5 @@
 import type { MapMarker } from "@/lib/types";
+import { getDecorationType } from "@/lib/decorationCatalog";
 
 export type PlacementIntent =
   | {
@@ -13,7 +14,7 @@ export type PlacementIntent =
     }
   | { kind: "tower"; capCost: number }
   | { kind: "footprint"; name: string; capCost: number }
-  | { kind: "decoration"; title: string; description: string; capCost: number };
+  | { kind: "decoration"; decorationTypeId: string; title: string; description: string; capCost: number };
 
 export function haversineM(
   lat1: number,
@@ -80,8 +81,10 @@ export function placementLabel(intent: PlacementIntent): string {
       return "Signal tower";
     case "footprint":
       return intent.name;
-    case "decoration":
-      return intent.title;
+    case "decoration": {
+      const typeName = getDecorationType(intent.decorationTypeId)?.name ?? "Decoration";
+      return `${typeName} · ${intent.title}`;
+    }
   }
 }
 

@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { PlacementIntent } from "@/lib/placement";
 import { placementKindLabel, placementLabel } from "@/lib/placement";
+import { getDecorationType } from "@/lib/decorationCatalog";
 import MapModal from "@/components/ui/MapModal";
 
 type Props = {
@@ -73,6 +74,7 @@ export default function PlacementConfirmModal({
       const { error } = await supabase.rpc("place_decoration", {
         p_title: intent.title,
         p_description: intent.description,
+        p_decoration_type: intent.decorationTypeId,
         p_lat: placement.lat,
         p_lng: placement.lng,
         ...anchorParams,
@@ -109,9 +111,26 @@ export default function PlacementConfirmModal({
           <span className="font-medium text-slate-900">Location:</span>{" "}
           {placement.lat.toFixed(5)}, {placement.lng.toFixed(5)}
         </p>
-        {intent.kind === "decoration" && (
-          <p className="text-slate-600 italic">{intent.description}</p>
-        )}
+        {intent.kind === "decoration" && (() => {
+          const decorationType = getDecorationType(intent.decorationTypeId);
+          return (
+            <>
+              {decorationType && (
+                <p className="flex items-center gap-2 text-slate-700">
+                  <span
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-lg"
+                    style={{ backgroundColor: `${decorationType.marker_color}22` }}
+                    aria-hidden
+                  >
+                    {decorationType.icon}
+                  </span>
+                  <span>{decorationType.name}</span>
+                </p>
+              )}
+              <p className="text-slate-600 italic">{intent.description}</p>
+            </>
+          );
+        })()}
       </div>
 
       {error && <p className="text-sm text-red-600 mt-3">{error}</p>}

@@ -4,6 +4,7 @@ import { Marker } from "react-map-gl/mapbox";
 import { Sparkles } from "lucide-react";
 import type { MouseEvent } from "react";
 import type { MapDecoration } from "@/lib/types";
+import { getDecorationType } from "@/lib/decorationCatalog";
 import LiveCountdown from "@/components/ui/LiveCountdown";
 
 type Props = {
@@ -13,6 +14,10 @@ type Props = {
 };
 
 export default function DecorationMarker({ decoration, onClick, zIndex = 0 }: Props) {
+  const decorationType = getDecorationType(decoration.decoration_type);
+  const markerColor = decorationType?.marker_color ?? "#8b5cf6";
+  const icon = decorationType?.icon;
+
   return (
     <Marker
       longitude={decoration.lng}
@@ -44,8 +49,15 @@ export default function DecorationMarker({ decoration, onClick, zIndex = 0 }: Pr
             aria-hidden
           />
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-violet-500 shadow-lg">
-          <Sparkles className="h-5 w-5 text-white" strokeWidth={2.25} />
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white shadow-lg text-xl"
+          style={{ backgroundColor: markerColor }}
+        >
+          {icon ? (
+            <span aria-hidden>{icon}</span>
+          ) : (
+            <Sparkles className="h-5 w-5 text-white" strokeWidth={2.25} />
+          )}
         </div>
       </button>
     </Marker>
