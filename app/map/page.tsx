@@ -224,6 +224,10 @@ export default function MapPage() {
     await handlePurchase(capCost);
   };
 
+  const dismissCastSplash = useCallback(() => {
+    setCastSplash({ show: false, cost: 0 });
+  }, []);
+
   const handleFootprintSelect = (fp: Footprint) => {
     lastGpsReloadRef.current = null;
     setMapAnchor({
@@ -395,7 +399,7 @@ export default function MapPage() {
         />
       )}
 
-      <CastSplash show={castSplash.show} capCost={castSplash.cost} onDone={() => setCastSplash({ show: false, cost: 0 })} />
+      <CastSplash show={castSplash.show} capCost={castSplash.cost} onDone={dismissCastSplash} />
 
       <InstallPrompt aboveFab />
     </div>

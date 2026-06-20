@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BottleImage from "@/components/bottles/BottleImage";
 
@@ -11,11 +11,16 @@ type Props = {
 };
 
 export default function CastSplash({ show, capCost, onDone }: Props) {
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+
   useEffect(() => {
     if (!show) return;
-    const t = setTimeout(onDone, 1600);
-    return () => clearTimeout(t);
-  }, [show, onDone]);
+    const t = window.setTimeout(() => onDoneRef.current(), 1600);
+    return () => window.clearTimeout(t);
+  }, [show]);
+
+  const dismiss = () => onDoneRef.current();
 
   return (
     <AnimatePresence>
@@ -25,6 +30,7 @@ export default function CastSplash({ show, capCost, onDone }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          onClick={dismiss}
         >
           <div className="relative flex flex-col items-center text-center px-8">
             <motion.div
