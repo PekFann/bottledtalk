@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { Check, ShoppingBag, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { isExpired } from "@/lib/geo";
-import { useLiveCountdown } from "@/lib/hooks/useLiveCountdown";
 import BottleImage from "@/components/bottles/BottleImage";
+import LiveCountdown from "@/components/ui/LiveCountdown";
 
 type Props = {
   bottleId: string;
@@ -80,7 +80,6 @@ export default function BottleViewHeader({
   const [bagLoading, setBagLoading] = useState(false);
   const [bagError, setBagError] = useState<string | null>(null);
   const [inBag, setInBag] = useState(alreadyInBag);
-  const countdown = useLiveCountdown(expiresAt);
   const expired = isExpiredProp || isExpired(expiresAt);
 
   const handleKeepInBag = async () => {
@@ -123,7 +122,7 @@ export default function BottleViewHeader({
               ) : (
                 <>
                   {" · Washes away in "}
-                  <span className="font-medium text-amber-700 tabular-nums">{countdown}</span>
+                  <LiveCountdown expiresAt={expiresAt} />
                 </>
               )}
             </p>

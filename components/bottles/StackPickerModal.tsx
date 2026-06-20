@@ -84,7 +84,11 @@ export default function StackPickerModal({
                       A beacon calling bottles from afar
                     </p>
                     <p className="text-sm text-sky-700 mt-0.5">
-                      <LiveCountdown expiresAt={tower.expires_at} /> of light remaining
+                      <LiveCountdown
+                        expiresAt={tower.expires_at}
+                        className="bg-sky-100 text-sky-800"
+                      />{" "}
+                      of light remaining
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-sky-500 shrink-0" />
@@ -107,7 +111,11 @@ export default function StackPickerModal({
                     Another sailor&apos;s beacon on the horizon
                   </p>
                   <p className="text-sm text-slate-600 mt-0.5">
-                    <LiveCountdown expiresAt={tower.expires_at} /> of light remaining
+                    <LiveCountdown
+                      expiresAt={tower.expires_at}
+                      className="bg-sky-100 text-sky-800"
+                    />{" "}
+                    of light remaining
                   </p>
                 </div>
               </div>

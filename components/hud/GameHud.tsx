@@ -36,7 +36,7 @@ export default function GameHud({
           transition={{ duration: 0.35 }}
         >
           <Coins className="h-3.5 w-3.5 text-amber-600" strokeWidth={2.25} />
-          <span className="font-semibold text-slate-700 text-sm tabular-nums">
+          <span className="text-sm text-slate-700 font-normal">
             {bottleCaps}
           </span>
         </motion.div>

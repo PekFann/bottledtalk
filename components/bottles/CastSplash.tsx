@@ -47,7 +47,7 @@ export default function CastSplash({ show, capCost, onDone }: Props) {
               transition={{ delay: 0.55, duration: 0.35 }}
             >
               <p className="text-2xl font-bold text-white">Bottle cast!</p>
-              <p className="text-amber-300 font-semibold mt-2">-{capCost} caps</p>
+              <p className="text-amber-300 font-normal mt-2">-{capCost} caps</p>
             </motion.div>
           </div>
         </motion.div>

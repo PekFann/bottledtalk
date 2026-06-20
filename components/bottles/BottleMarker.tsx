@@ -4,7 +4,7 @@ import { Marker } from "react-map-gl/mapbox";
 import { motion } from "framer-motion";
 import type { MouseEvent } from "react";
 import type { NearbyBottle } from "@/lib/types";
-import { useLiveCountdown } from "@/lib/hooks/useLiveCountdown";
+import LiveCountdown from "@/components/ui/LiveCountdown";
 import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
@@ -14,8 +14,6 @@ type Props = {
 };
 
 export default function BottleMarker({ bottle, onClick, isSelected = false }: Props) {
-  const countdown = useLiveCountdown(bottle.expires_at);
-
   return (
     <Marker longitude={bottle.lng} latitude={bottle.lat} anchor="bottom">
       <button
@@ -37,9 +35,12 @@ export default function BottleMarker({ bottle, onClick, isSelected = false }: Pr
           <p className={`truncate text-[10px] leading-tight ${isSelected ? "font-semibold" : "font-medium"}`}>
             {bottle.title}
           </p>
-          <p className="mt-0.5 text-[9px] leading-tight text-amber-700/90 tabular-nums">
-            {countdown}
-          </p>
+          <div className="mt-0.5 flex justify-center">
+            <LiveCountdown
+              expiresAt={bottle.expires_at}
+              className="text-[9px] px-1.5 py-px leading-tight"
+            />
+          </div>
           <span
             className="absolute -bottom-1.5 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[6px] border-x-transparent border-t-white/90"
             aria-hidden

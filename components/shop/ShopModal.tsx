@@ -145,7 +145,7 @@ export default function ShopModal({
       onClose={onClose}
       title="Shop"
       subtitle={
-        <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+        <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-normal">
           <Coins className="h-3 w-3 text-amber-500" />
           {bottleCaps} caps available
         </p>
@@ -211,14 +211,14 @@ export default function ShopModal({
                               <p className="font-semibold text-lg text-slate-900">{type.name}</p>
                               <p className="text-xs text-slate-500 mt-1 line-clamp-2">{type.description}</p>
                               <div className="flex flex-wrap items-center gap-2 mt-2.5">
-                                <span className="rounded-full bg-sky-500 px-2.5 py-0.5 text-xs font-semibold text-white">
+                                <span className="rounded-full bg-sky-500 px-2.5 py-0.5 text-xs font-normal text-white">
                                   {formatDuration(type.duration_hours)}
                                 </span>
-                                <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-semibold text-white">
+                                <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-normal text-white">
                                   {type.cap_cost} caps
                                 </span>
                                 {type.is_sealed && (
-                                  <span className="rounded-full bg-violet-500 px-2.5 py-0.5 text-xs font-semibold text-white">
+                                  <span className="rounded-full bg-violet-500 px-2.5 py-0.5 text-xs font-normal text-white">
                                     PIN locked
                                   </span>
                                 )}
@@ -290,7 +290,7 @@ export default function ShopModal({
                 <p className="text-sm text-slate-600 mt-2">
                   Place a tower at your location. Anyone within 1 km gets 5 km radar for {SIGNAL_TOWER_DAYS} days.
                 </p>
-                <p className="text-sm font-medium text-amber-700 mt-3">{SIGNAL_TOWER_COST} caps</p>
+                <p className="text-sm font-normal text-amber-700 mt-3">{SIGNAL_TOWER_COST} caps</p>
               </div>
               {error && <div className="rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
               <button type="button" onClick={handleTowerSubmit} disabled={submitting || bottleCaps < SIGNAL_TOWER_COST} className="w-full btn-primary-block font-medium py-3">
@@ -309,7 +309,7 @@ export default function ShopModal({
                 <p className="text-sm text-slate-600 mt-2">
                   Mark this spot privately. Return anytime for {FOOTPRINT_DAYS} days to browse 2 km and comment remotely.
                 </p>
-                <p className="text-sm font-medium text-amber-700 mt-3">{FOOTPRINT_COST} caps</p>
+                <p className="text-sm font-normal text-amber-700 mt-3">{FOOTPRINT_COST} caps</p>
               </div>
               <div className="text-left">
                 <label htmlFor="fp-name" className="block text-sm font-medium text-slate-700 mb-1.5">Name</label>
