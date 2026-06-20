@@ -3,8 +3,8 @@
 import { ChevronRight, Radio } from "lucide-react";
 import type { MapStackItem, NearbyBottle, SignalTower } from "@/lib/types";
 import { getCatalogDescription } from "@/lib/bottleCatalog";
-import { formatCountdown } from "@/lib/geo";
 import BottleImage from "@/components/bottles/BottleImage";
+import LiveCountdown from "@/components/ui/LiveCountdown";
 import MapModal from "@/components/ui/MapModal";
 
 type Props = {
@@ -53,7 +53,7 @@ export default function StackPickerModal({
                       {catalogLine ?? bottle.type_name}
                     </p>
                     <p className="text-sm text-amber-700 mt-0.5">
-                      {formatCountdown(bottle.expires_at)} until the tide
+                      <LiveCountdown expiresAt={bottle.expires_at} /> until the tide
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-sky-500 shrink-0" />
@@ -84,7 +84,7 @@ export default function StackPickerModal({
                       A beacon calling bottles from afar
                     </p>
                     <p className="text-sm text-sky-700 mt-0.5">
-                      {formatCountdown(tower.expires_at)} of light remaining
+                      <LiveCountdown expiresAt={tower.expires_at} /> of light remaining
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-sky-500 shrink-0" />
@@ -107,7 +107,7 @@ export default function StackPickerModal({
                     Another sailor&apos;s beacon on the horizon
                   </p>
                   <p className="text-sm text-slate-600 mt-0.5">
-                    {formatCountdown(tower.expires_at)} of light remaining
+                    <LiveCountdown expiresAt={tower.expires_at} /> of light remaining
                   </p>
                 </div>
               </div>

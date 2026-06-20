@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, ShoppingBag, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { formatCountdown, isExpired } from "@/lib/geo";
+import { isExpired } from "@/lib/geo";
+import { useLiveCountdown } from "@/lib/hooks/useLiveCountdown";
 import BottleImage from "@/components/bottles/BottleImage";
 
 type Props = {
@@ -79,15 +80,8 @@ export default function BottleViewHeader({
   const [bagLoading, setBagLoading] = useState(false);
   const [bagError, setBagError] = useState<string | null>(null);
   const [inBag, setInBag] = useState(alreadyInBag);
-  const [countdown, setCountdown] = useState(formatCountdown(expiresAt));
+  const countdown = useLiveCountdown(expiresAt);
   const expired = isExpiredProp || isExpired(expiresAt);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown(formatCountdown(expiresAt));
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [expiresAt]);
 
   const handleKeepInBag = async () => {
     setBagLoading(true);
@@ -124,7 +118,14 @@ export default function BottleViewHeader({
               ) : (
                 creatorName
               )}
-              {expired ? " · Washed away" : ` · Washes away in ${countdown}`}
+              {expired ? (
+                " · Washed away"
+              ) : (
+                <>
+                  {" · Washes away in "}
+                  <span className="font-medium text-amber-700 tabular-nums">{countdown}</span>
+                </>
+              )}
             </p>
           </div>
         </div>

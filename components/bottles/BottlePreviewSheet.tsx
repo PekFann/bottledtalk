@@ -48,7 +48,10 @@ export default function BottlePreviewSheet({ bottle, onClose, footprintId }: Pro
 
       <p className="mt-3 text-sm text-slate-700 glass-card rounded-lg px-3 py-2 flex items-center gap-2">
         <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-        Washes ashore in {countdown}
+        <span>
+          Washes ashore in{" "}
+          <span className="font-semibold text-amber-700 tabular-nums">{countdown}</span>
+        </span>
       </p>
 
       <Link
