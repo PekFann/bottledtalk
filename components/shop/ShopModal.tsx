@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
-import { Coins, Radio, Footprints, X } from "lucide-react";
+import { Coins, Radio, Footprints, X, ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getShopBottleTypes } from "@/lib/bottleCatalog";
 import type { BottleType } from "@/lib/types";
@@ -67,6 +67,10 @@ export default function ShopModal({
     setPin("");
     setMessage("");
     setError(null);
+  };
+
+  const goBackToBottlePicker = () => {
+    selectBottleType("");
   };
 
   const handleBottleSubmit = async (e: React.FormEvent) => {
@@ -166,7 +170,11 @@ export default function ShopModal({
               <button
                 key={t.id}
                 type="button"
-                onClick={() => { setTab(t.id); setError(null); }}
+                onClick={() => {
+                  setTab(t.id);
+                  setError(null);
+                  if (t.id !== "bottles") goBackToBottlePicker();
+                }}
                 className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
                   tab === t.id
                     ? "text-sky-600 border-b-2 border-sky-500"
@@ -188,64 +196,57 @@ export default function ShopModal({
                 </p>
               )}
               <div className={`space-y-5 ${footprintMode ? "opacity-50 pointer-events-none" : ""}`}>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Bottle type</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {shopBottleTypes.map((type) => {
-                      const affordable = bottleCaps >= type.cap_cost;
-                      const selected = selectedTypeId === type.id;
-                      return (
-                        <button
-                          key={type.id}
-                          type="button"
-                          onClick={() => selectBottleType(type.id)}
-                          className={`flex items-center gap-3 rounded-lg glass-card p-3 text-left transition-all ${
-                            selected
-                              ? "border-amber-400 ring-2 ring-amber-200"
-                              : affordable
-                                ? "hover:border-slate-300"
-                                : "opacity-50"
-                          }`}
-                          style={selected ? { borderColor: type.marker_color } : undefined}
-                        >
-                          <div
-                            className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-xl text-4xl"
-                            style={{ backgroundColor: `${type.marker_color}22` }}
-                            aria-hidden
+                {!selectedTypeId ? (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Bottle type</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {shopBottleTypes.map((type) => {
+                        const affordable = bottleCaps >= type.cap_cost;
+                        return (
+                          <button
+                            key={type.id}
+                            type="button"
+                            onClick={() => selectBottleType(type.id)}
+                            disabled={!affordable}
+                            className={`flex items-center gap-3 rounded-lg glass-card p-3 text-left transition-all ${
+                              affordable ? "hover:border-slate-300" : "opacity-50 cursor-not-allowed"
+                            }`}
                           >
-                            {type.icon}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="font-medium text-sm text-slate-900">{type.name}</p>
-                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{type.description}</p>
-                            <p className="text-xs text-slate-500 mt-1">
-                              {formatDuration(type.duration_hours)}
-                              {type.is_sealed ? " · PIN locked" : ""}
-                            </p>
-                            <p className="text-xs font-medium text-amber-700 mt-1">
-                              {type.cap_cost} caps
-                            </p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {selectedTypeId && (
-                  <div className="space-y-5 glass-card rounded-xl p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-slate-900">
-                        {selectedType?.name}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => selectBottleType("")}
-                        className="text-xs font-medium text-sky-600 hover:text-sky-700"
-                      >
-                        Change bottle
-                      </button>
+                            <div
+                              className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-xl text-4xl"
+                              style={{ backgroundColor: `${type.marker_color}22` }}
+                              aria-hidden
+                            >
+                              {type.icon}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-sm text-slate-900">{type.name}</p>
+                              <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{type.description}</p>
+                              <p className="text-xs text-slate-500 mt-1">
+                                {formatDuration(type.duration_hours)}
+                                {type.is_sealed ? " · PIN locked" : ""}
+                              </p>
+                              <p className="text-xs font-medium text-amber-700 mt-1">
+                                {type.cap_cost} caps
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
+                  </div>
+                ) : (
+                  <div className="space-y-5 glass-card rounded-xl p-4">
+                    <button
+                      type="button"
+                      onClick={goBackToBottlePicker}
+                      className="flex items-center gap-1 text-sm font-medium text-sky-600 hover:text-sky-700"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Back
+                    </button>
+
+                    <p className="text-sm font-semibold text-slate-900">{selectedType?.name}</p>
 
                     <div>
                       <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1.5">Title</label>

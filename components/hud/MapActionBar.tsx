@@ -5,8 +5,6 @@ import { motion } from "framer-motion";
 import { Footprints, Store, Users, ShoppingBag } from "lucide-react";
 
 type Props = {
-  bagUsed: number;
-  bagLimit: number;
   onOpenFriends: () => void;
   onOpenShop: () => void;
   onOpenBag: () => void;
@@ -39,8 +37,6 @@ function ActionButton({
 }
 
 export default function MapActionBar({
-  bagUsed,
-  bagLimit,
   onOpenFriends,
   onOpenShop,
   onOpenBag,
@@ -54,7 +50,7 @@ export default function MapActionBar({
       <ActionButton label="Shop" onClick={onOpenShop}>
         <Store className="h-[22px] w-[22px]" strokeWidth={2.25} />
       </ActionButton>
-      <ActionButton label={`Pouch ${bagUsed}/${bagLimit}`} onClick={onOpenBag}>
+      <ActionButton label="Bag" onClick={onOpenBag}>
         <ShoppingBag className="h-[22px] w-[22px]" strokeWidth={2.25} />
       </ActionButton>
       <ActionButton label="Footprint" onClick={onOpenFootprints}>

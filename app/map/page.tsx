@@ -314,8 +314,6 @@ export default function MapPage() {
 
       {userLocation && (
         <MapActionBar
-          bagUsed={bagItems.length}
-          bagLimit={bagLimit}
           onOpenFriends={() => setShowFriends(true)}
           onOpenShop={() => setShowShop(true)}
           onOpenBag={() => setShowBag(true)}
