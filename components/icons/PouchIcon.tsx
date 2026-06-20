@@ -14,10 +14,12 @@ export default function PouchIcon({ className = "h-5 w-5" }: Props) {
       className={className}
       aria-hidden
     >
-      <path d="M8 6h8l1 3H7l1-3z" />
-      <path d="M7 9c-1 0-2 1.5-2 4v5c0 1.5 1 2.5 2.5 2.5h9c1.5 0 2.5-1 2.5-2.5v-5c0-2.5-1-4-2-4" />
-      <path d="M10 6V5a2 2 0 0 1 4 0v1" />
-      <path d="M9 13h6" />
+      <path d="M8 4.5c0-1 1.5-2 4-2s4 1 4 2" />
+      <path d="M7 4.5h10" />
+      <path d="M9 3.5c.8-.8 1.7-.8 2.5 0s1.7.8 2.5 0" />
+      <path d="M7.5 7c-1.2 0-2 1.2-2 3.5v6.5c0 1.4 1.1 2.5 2.5 2.5h8c1.4 0 2.5-1.1 2.5-2.5v-6.5c0-2.3-.8-3.5-2-3.5" />
+      <path d="M9 7h6" />
+      <path d="M12 11v4" />
     </svg>
   );
 }

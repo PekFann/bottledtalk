@@ -37,12 +37,12 @@ export default function FootprintModal({ onClose, onSelect, onOpenShop }: Props)
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-4 sm:pb-0">
       <motion.div
-        className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-xl max-h-[70dvh] overflow-hidden flex flex-col"
+        className="w-full max-w-md rounded-xl game-panel-light max-h-[70dvh] overflow-hidden flex flex-col"
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <h2 className="font-semibold text-slate-900">Your footprints</h2>
+        <div className="flex items-center justify-between glass-header px-5 py-4">
+          <h2 className="font-bold text-slate-900">Your footprints</h2>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
@@ -64,7 +64,7 @@ export default function FootprintModal({ onClose, onSelect, onOpenShop }: Props)
                 key={fp.id}
                 type="button"
                 onClick={() => onSelect(fp)}
-                className="w-full flex items-center gap-3 rounded-lg border border-slate-200 p-3 text-left hover:bg-slate-50 transition-colors"
+                className="w-full flex items-center gap-3 rounded-lg glass-card p-3 text-left hover:bg-sky-50 transition-colors"
               >
                 <Footprints className="h-5 w-5 text-slate-500 shrink-0" />
                 <div className="min-w-0 flex-1">

@@ -38,9 +38,9 @@ export default function BagModal({ items, bagLimit, onClose, onTrashed }: Props)
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <div className="flex items-center justify-between glass-header px-5 py-4">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">Your bag</h2>
+            <h2 className="text-base font-bold text-slate-900">Your bag</h2>
             <p className="text-xs text-slate-500 mt-0.5">
               {items.length}/{bagLimit} slots
             </p>
@@ -58,7 +58,7 @@ export default function BagModal({ items, bagLimit, onClose, onTrashed }: Props)
           {items.map((item) => (
             <motion.div
               key={item.id}
-              className="rounded-lg border border-slate-200 bg-slate-50/50 p-3"
+              className="rounded-lg glass-card p-3"
               layout
             >
               <div className="mx-auto mb-2 flex justify-center">

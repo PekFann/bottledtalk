@@ -37,7 +37,9 @@ function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-sm rounded-xl game-panel-light p-5 shadow-lg">
-        <p className="text-sm text-slate-700">{message}</p>
+        <div className="glass-card rounded-lg p-3">
+          <p className="text-sm font-medium text-slate-800">{message}</p>
+        </div>
         <div className="mt-4 flex gap-2 justify-end">
           <button
             type="button"

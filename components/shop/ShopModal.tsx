@@ -130,14 +130,14 @@ export default function ShopModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-4 sm:pb-0">
       <motion.div
-        className="w-full max-w-lg rounded-xl border border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xl max-h-[90dvh] overflow-y-auto"
+        className="w-full max-w-lg rounded-xl game-panel-light max-h-[90dvh] overflow-y-auto"
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <div className="sticky top-0 z-10 border-b border-slate-200 bg-white rounded-t-xl">
+        <div className="sticky top-0 z-10 glass-header rounded-t-xl">
           <div className="flex items-center justify-between px-5 py-4">
             <div>
-              <h2 className="text-base font-semibold text-slate-900">Shop</h2>
+              <h2 className="text-base font-bold text-slate-900">Shop</h2>
               <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                 <Coins className="h-3 w-3 text-amber-500" />
                 {bottleCaps} caps available
@@ -190,12 +190,12 @@ export default function ShopModal({
                           key={type.id}
                           type="button"
                           onClick={() => setSelectedTypeId(type.id)}
-                          className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-all ${
+                          className={`flex items-center gap-3 rounded-lg glass-card p-3 text-left transition-all ${
                             selected
-                              ? "border-amber-400 bg-amber-50 ring-2 ring-amber-200"
+                              ? "border-amber-400 ring-2 ring-amber-200"
                               : affordable
-                                ? "border-slate-200 bg-white hover:border-slate-300"
-                                : "border-slate-100 bg-slate-50 opacity-50"
+                                ? "hover:border-slate-300"
+                                : "opacity-50"
                           }`}
                           style={selected ? { borderColor: type.marker_color } : undefined}
                         >
@@ -258,7 +258,7 @@ export default function ShopModal({
           )}
 
           {tab === "tower" && (
-            <div className="space-y-5 text-center">
+            <div className="space-y-5 text-center glass-card rounded-xl p-5">
               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-sky-100">
                 <Radio className="h-10 w-10 text-sky-600" strokeWidth={2} />
               </div>
@@ -277,7 +277,7 @@ export default function ShopModal({
           )}
 
           {tab === "footprint" && (
-            <form onSubmit={handleFootprintSubmit} className="space-y-5 text-center">
+            <form onSubmit={handleFootprintSubmit} className="space-y-5 text-center glass-card rounded-xl p-5">
               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
                 <Footprints className="h-10 w-10 text-slate-600" strokeWidth={2} />
               </div>
