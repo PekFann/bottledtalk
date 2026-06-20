@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { motion } from "framer-motion";
-import { Coins, Radio, Footprints, X, ChevronLeft } from "lucide-react";
+import { Coins, Radio, Footprints, ChevronLeft } from "lucide-react";
+import MapModal from "@/components/ui/MapModal";
 import { createClient } from "@/lib/supabase/client";
 import { getShopBottleTypes } from "@/lib/bottleCatalog";
 import type { BottleType } from "@/lib/types";
@@ -141,53 +141,41 @@ export default function ShopModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-4 sm:pb-0">
-      <motion.div
-        className="w-full max-w-lg rounded-xl game-panel-light max-h-[90dvh] overflow-y-auto"
-        initial={{ y: 40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-      >
-        <div className="sticky top-0 z-10 glass-header rounded-t-xl">
-          <div className="flex items-center justify-between px-5 py-4">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Shop</h2>
-              <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                <Coins className="h-3 w-3 text-amber-500" />
-                {bottleCaps} caps available
-              </p>
-            </div>
+    <MapModal
+      onClose={onClose}
+      title="Shop"
+      subtitle={
+        <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+          <Coins className="h-3 w-3 text-amber-500" />
+          {bottleCaps} caps available
+        </p>
+      }
+      headerBelow={
+        <div className="flex border-t border-slate-100">
+          {tabs.map((t) => (
             <button
+              key={t.id}
               type="button"
-              onClick={onClose}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50"
-              aria-label="Close"
+              onClick={() => {
+                setTab(t.id);
+                setError(null);
+                if (t.id !== "bottles") goBackToBottlePicker();
+              }}
+              className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
+                tab === t.id
+                  ? "text-sky-600 border-b-2 border-sky-500"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
             >
-              <X className="h-5 w-5" strokeWidth={2.25} />
+              {t.label}
             </button>
-          </div>
-          <div className="flex border-t border-slate-100">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => {
-                  setTab(t.id);
-                  setError(null);
-                  if (t.id !== "bottles") goBackToBottlePicker();
-                }}
-                className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
-                  tab === t.id
-                    ? "text-sky-600 border-b-2 border-sky-500"
-                    : "text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+          ))}
         </div>
-
-        <div className="p-5">
+      }
+      headerSticky
+      panelScroll
+      panelClassName="max-h-[90dvh]"
+    >
           {tab === "bottles" && (
             <form onSubmit={handleBottleSubmit} className="space-y-5">
               {footprintMode && (
@@ -327,8 +315,6 @@ export default function ShopModal({
               </button>
             </form>
           )}
-        </div>
-      </motion.div>
-    </div>
+    </MapModal>
   );
 }

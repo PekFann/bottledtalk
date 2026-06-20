@@ -1,11 +1,10 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { motion } from "framer-motion";
-import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { SignalTower } from "@/lib/types";
 import { TOWER_EXTEND_7D_COST, TOWER_EXTEND_30D_COST } from "@/lib/types";
+import MapModal from "@/components/ui/MapModal";
 
 type Props = {
   tower: SignalTower;
@@ -44,35 +43,26 @@ export default function SignalTowerExtendModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <motion.div
-        className="w-full max-w-sm rounded-xl game-panel-light overflow-hidden shadow-xl"
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-      >
-        <div className="flex items-center justify-between glass-header px-5 py-4">
-          <h2 className="font-bold text-slate-900">Extend signal tower</h2>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600" aria-label="Close">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="p-5">
-          <div className="glass-card rounded-lg p-4 mb-4">
-            <p className="text-sm text-slate-700">
-              Expires {new Date(tower.expires_at).toLocaleDateString()}
-            </p>
-          </div>
-          {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
-          <div className="space-y-2">
-            <button type="button" disabled={submitting || bottleCaps < TOWER_EXTEND_7D_COST} onClick={() => extend(7)} className="w-full btn-primary-block py-2.5 text-sm">
-              +7 days (−{TOWER_EXTEND_7D_COST} caps)
-            </button>
-            <button type="button" disabled={submitting || bottleCaps < TOWER_EXTEND_30D_COST} onClick={() => extend(30)} className="w-full rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm">
-              +30 days (−{TOWER_EXTEND_30D_COST} caps)
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </div>
+    <MapModal
+      onClose={onClose}
+      title="Extend signal tower"
+      maxWidth="sm"
+      align="center"
+    >
+      <div className="glass-card rounded-lg p-4 mb-4">
+        <p className="text-sm text-slate-700">
+          Expires {new Date(tower.expires_at).toLocaleDateString()}
+        </p>
+      </div>
+      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+      <div className="space-y-2">
+        <button type="button" disabled={submitting || bottleCaps < TOWER_EXTEND_7D_COST} onClick={() => extend(7)} className="w-full btn-primary-block py-2.5 text-sm">
+          +7 days (−{TOWER_EXTEND_7D_COST} caps)
+        </button>
+        <button type="button" disabled={submitting || bottleCaps < TOWER_EXTEND_30D_COST} onClick={() => extend(30)} className="w-full rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm">
+          +30 days (−{TOWER_EXTEND_30D_COST} caps)
+        </button>
+      </div>
+    </MapModal>
   );
 }

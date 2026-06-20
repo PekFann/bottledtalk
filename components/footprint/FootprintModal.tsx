@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Footprints, X } from "lucide-react";
+import { Footprints } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Footprint } from "@/lib/types";
+import MapModal from "@/components/ui/MapModal";
 
 type Props = {
   onClose: () => void;
@@ -35,50 +35,42 @@ export default function FootprintModal({ onClose, onSelect, onOpenShop }: Props)
   }, [getSupabase]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-4 sm:pb-0">
-      <motion.div
-        className="w-full max-w-md rounded-xl game-panel-light max-h-[70dvh] overflow-hidden flex flex-col"
-        initial={{ y: 40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-      >
-        <div className="flex items-center justify-between glass-header px-5 py-4">
-          <h2 className="font-bold text-slate-900">Your footprints</h2>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600" aria-label="Close">
-            <X className="h-5 w-5" />
+    <MapModal
+      onClose={onClose}
+      title="Your footprints"
+      maxWidth="md"
+      panelClassName="max-h-[70dvh]"
+      bodyClassName="p-4 space-y-2"
+    >
+      {loading ? (
+        <p className="text-sm text-slate-500 text-center py-8">Loading…</p>
+      ) : footprints.length === 0 ? (
+        <div className="text-center py-8">
+          <Footprints className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+          <p className="text-sm text-slate-500">No footprints yet</p>
+          <button type="button" onClick={onOpenShop} className="mt-3 text-sm text-sky-600 font-medium">
+            Get one in Shop
           </button>
         </div>
-        <div className="overflow-y-auto p-4 space-y-2 flex-1">
-          {loading ? (
-            <p className="text-sm text-slate-500 text-center py-8">Loading…</p>
-          ) : footprints.length === 0 ? (
-            <div className="text-center py-8">
-              <Footprints className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-              <p className="text-sm text-slate-500">No footprints yet</p>
-              <button type="button" onClick={onOpenShop} className="mt-3 text-sm text-sky-600 font-medium">
-                Get one in Shop
-              </button>
+      ) : (
+        footprints.map((fp) => (
+          <button
+            key={fp.id}
+            type="button"
+            onClick={() => onSelect(fp)}
+            className="w-full flex items-center gap-3 rounded-lg glass-card p-3 text-left hover:bg-sky-50 transition-colors"
+          >
+            <Footprints className="h-5 w-5 text-slate-500 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-sm text-slate-900 truncate">{fp.name}</p>
+              <p className="text-xs text-slate-500">
+                Until {new Date(fp.expires_at).toLocaleDateString()}
+              </p>
             </div>
-          ) : (
-            footprints.map((fp) => (
-              <button
-                key={fp.id}
-                type="button"
-                onClick={() => onSelect(fp)}
-                className="w-full flex items-center gap-3 rounded-lg glass-card p-3 text-left hover:bg-sky-50 transition-colors"
-              >
-                <Footprints className="h-5 w-5 text-slate-500 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm text-slate-900 truncate">{fp.name}</p>
-                  <p className="text-xs text-slate-500">
-                    Until {new Date(fp.expires_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <span className="text-xs font-medium text-sky-600 shrink-0">Go</span>
-              </button>
-            ))
-          )}
-        </div>
-      </motion.div>
-    </div>
+            <span className="text-xs font-medium text-sky-600 shrink-0">Go</span>
+          </button>
+        ))
+      )}
+    </MapModal>
   );
 }

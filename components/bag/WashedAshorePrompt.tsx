@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import type { WashedAshoreBottle } from "@/lib/types";
 import BottleImage from "@/components/bottles/BottleImage";
+import { MapModalCloseButton } from "@/components/ui/MapModal";
 
 type Props = {
   onCollected: () => void;
@@ -52,7 +53,10 @@ export default function WashedAshorePrompt({ onCollected }: Props) {
       >
         <div className="game-panel-light rounded-2xl p-4 shadow-xl">
           <div className="glass-card rounded-xl p-4">
-            <p className="text-sm font-bold text-sky-900">Washed ashore</p>
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-sm font-bold text-sky-900">Washed ashore</p>
+              <MapModalCloseButton onClick={dismiss} />
+            </div>
             <p className="text-sm text-slate-700 mt-1 flex items-center gap-2">
               <BottleImage size="sm" className="shrink-0 inline-block" />
               &ldquo;{current.title}&rdquo; expired. Keep it in your bag?
