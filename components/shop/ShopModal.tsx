@@ -45,7 +45,7 @@ export default function ShopModal({
 }: Props) {
   const shopBottleTypes = getShopBottleTypes(bottleTypes);
   const [tab, setTab] = useState<Tab>(initialTab);
-  const [selectedTypeId, setSelectedTypeId] = useState(shopBottleTypes[0]?.id ?? "");
+  const [selectedTypeId, setSelectedTypeId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [pin, setPin] = useState("");
@@ -58,7 +58,16 @@ export default function ShopModal({
   const selectedType = shopBottleTypes.find((t) => t.id === selectedTypeId);
   const isSealed = selectedType?.is_sealed ?? false;
   const bottleCost = selectedType?.cap_cost ?? 0;
-  const canAffordBottle = bottleCaps >= bottleCost;
+  const canAffordBottle = selectedType ? bottleCaps >= bottleCost : false;
+
+  const selectBottleType = (typeId: string) => {
+    setSelectedTypeId(typeId);
+    setTitle("");
+    setDescription("");
+    setPin("");
+    setMessage("");
+    setError(null);
+  };
 
   const handleBottleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,7 +198,7 @@ export default function ShopModal({
                         <button
                           key={type.id}
                           type="button"
-                          onClick={() => setSelectedTypeId(type.id)}
+                          onClick={() => selectBottleType(type.id)}
                           className={`flex items-center gap-3 rounded-lg glass-card p-3 text-left transition-all ${
                             selected
                               ? "border-amber-400 ring-2 ring-amber-200"
@@ -223,37 +232,56 @@ export default function ShopModal({
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1.5">Title</label>
-                  <input id="title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} required className={fieldClassName} placeholder="A note for whoever finds this…" />
-                </div>
+                {selectedTypeId && (
+                  <div className="space-y-5 glass-card rounded-xl p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {selectedType?.name}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => selectBottleType("")}
+                        className="text-xs font-medium text-sky-600 hover:text-sky-700"
+                      >
+                        Change bottle
+                      </button>
+                    </div>
 
-                {isSealed && (
-                  <>
                     <div>
-                      <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
-                      <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={300} required rows={2} className={`${fieldClassName} resize-none`} placeholder="What seekers will see before unlocking…" />
+                      <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1.5">Title</label>
+                      <input id="title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} required className={fieldClassName} placeholder="A note for whoever finds this…" />
                     </div>
+
+                    {isSealed && (
+                      <>
+                        <div>
+                          <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
+                          <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={300} required rows={2} className={`${fieldClassName} resize-none`} placeholder="What seekers will see before unlocking…" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2 text-center">4-digit PIN</label>
+                          <PinInput value={pin} onChange={setPin} disabled={submitting} />
+                        </div>
+                      </>
+                    )}
+
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2 text-center">4-digit PIN</label>
-                      <PinInput value={pin} onChange={setPin} disabled={submitting} />
+                      <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-1.5">First message</label>
+                      <textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1000} required rows={4} className={`${fieldClassName} resize-none`} placeholder="Write your message to the sea…" />
                     </div>
-                  </>
+                  </div>
                 )}
-
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-1.5">First message</label>
-                  <textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1000} required rows={4} className={`${fieldClassName} resize-none`} placeholder="Write your message to the sea…" />
-                </div>
               </div>
 
-              {!canAffordBottle && selectedType && !footprintMode && (
+              {selectedTypeId && !canAffordBottle && selectedType && !footprintMode && (
                 <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">Need {bottleCost} caps — you have {bottleCaps}</p>
               )}
               {error && <div className="rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
-              <button type="submit" disabled={submitting || footprintMode || !selectedTypeId || !canAffordBottle} className="w-full btn-primary-block font-medium py-3">
-                {submitting ? "Dropping…" : `Drop bottle (−${bottleCost} caps)`}
-              </button>
+              {selectedTypeId && (
+                <button type="submit" disabled={submitting || footprintMode || !canAffordBottle} className="w-full btn-primary-block font-medium py-3">
+                  {submitting ? "Dropping…" : `Drop bottle (−${bottleCost} caps)`}
+                </button>
+              )}
             </form>
           )}
 

@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, X } from "lucide-react";
-import PouchIcon from "@/components/icons/PouchIcon";
+import { Check, ShoppingBag, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCountdown, isExpired } from "@/lib/geo";
 import BottleImage from "@/components/bottles/BottleImage";
@@ -142,7 +141,7 @@ export default function BottleViewHeader({
               {inBag ? (
                 <Check className="h-6 w-6 text-emerald-600" strokeWidth={2.25} />
               ) : (
-                <PouchIcon className="h-6 w-6" />
+                <ShoppingBag className="h-6 w-6" strokeWidth={2.25} />
               )}
             </button>
           )}

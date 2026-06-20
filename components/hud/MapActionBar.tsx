@@ -2,8 +2,7 @@
 
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { Footprints, Store, Users } from "lucide-react";
-import PouchIcon from "@/components/icons/PouchIcon";
+import { Footprints, Store, Users, ShoppingBag } from "lucide-react";
 
 type Props = {
   bagUsed: number;
@@ -56,7 +55,7 @@ export default function MapActionBar({
         <Store className="h-[22px] w-[22px]" strokeWidth={2.25} />
       </ActionButton>
       <ActionButton label={`Pouch ${bagUsed}/${bagLimit}`} onClick={onOpenBag}>
-        <PouchIcon className="h-[22px] w-[22px]" />
+        <ShoppingBag className="h-[22px] w-[22px]" strokeWidth={2.25} />
       </ActionButton>
       <ActionButton label="Footprint" onClick={onOpenFootprints}>
         <Footprints className="h-[22px] w-[22px]" strokeWidth={2.25} />
