@@ -65,6 +65,7 @@ export default function MapPage() {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [washedAshoreVisible, setWashedAshoreVisible] = useState(false);
 
   const getSupabase = useCallback(() => createClient(), []);
   const lastGpsReloadRef = useRef<{ lat: number; lng: number; at: number } | null>(null);
@@ -81,6 +82,18 @@ export default function MapPage() {
   }, [mapAnchor, userLocation]);
 
   const effectiveRadius = footprintMode ? FOOTPRINT_RADIUS_M : discoveryRadius;
+
+  const mapUiOpen =
+    showShop ||
+    showBag ||
+    showFriends ||
+    showFootprints ||
+    !!selectedBottle ||
+    !!stackItems ||
+    !!selectedTower ||
+    !!selectedDecoration ||
+    showPlacementConfirm ||
+    washedAshoreVisible;
 
   const reloadMapAtAnchor = useCallback(
     async (
@@ -305,8 +318,6 @@ export default function MapPage() {
         userId={userId}
       />
 
-      <WashedAshorePrompt onCollected={loadPlayer} />
-
       {footprintMode && (
         <div className="absolute top-16 left-3 right-3 z-20 flex items-center justify-between gap-2 rounded-xl game-panel-pastel px-4 py-2.5 shadow">
           <p className="text-sm text-slate-700 truncate">
@@ -330,27 +341,30 @@ export default function MapPage() {
         </div>
       ) : userLocation && anchorLocation ? (
         <>
-          <BottleMap
-            userLocation={userLocation}
-            anchorLocation={anchorLocation}
-            bottles={bottles}
-            towers={towers}
-            decorations={decorations}
-            currentUserId={userId ?? undefined}
-            footprintMode={footprintMode}
-            placementMode={!!placementIntent}
-            onSelectBottle={setSelectedBottle}
-            onSelectStack={(items) => setStackItems(items)}
-            onSelectTower={(tower) => {
-              if (tower.owner_id === userId) setSelectedTower(tower);
-            }}
-            onSelectDecoration={setSelectedDecoration}
-            onMapCenterChange={(lat, lng) => {
-              if (placementIntent) setPlacementPin({ lat, lng });
-            }}
-            radiusM={effectiveRadius}
-            selectedBottleId={selectedBottle?.id ?? null}
-          />
+          <div className="map-base-layer">
+            <BottleMap
+              userLocation={userLocation}
+              anchorLocation={anchorLocation}
+              bottles={bottles}
+              towers={towers}
+              decorations={decorations}
+              currentUserId={userId ?? undefined}
+              footprintMode={footprintMode}
+              placementMode={!!placementIntent}
+              onSelectBottle={setSelectedBottle}
+              onSelectStack={(items) => setStackItems(items)}
+              onSelectTower={(tower) => {
+                if (tower.owner_id === userId) setSelectedTower(tower);
+              }}
+              onSelectDecoration={setSelectedDecoration}
+              onMapCenterChange={(lat, lng) => {
+                if (placementIntent) setPlacementPin({ lat, lng });
+              }}
+              radiusM={effectiveRadius}
+              selectedBottleId={selectedBottle?.id ?? null}
+              interactionDisabled={mapUiOpen}
+            />
+          </div>
 
           {placementIntent && placementPin && anchorLocation && (
             <MapPlacementOverlay
@@ -388,6 +402,11 @@ export default function MapPage() {
           onOpenFootprints={() => setShowFootprints(true)}
         />
       )}
+
+      <WashedAshorePrompt
+        onCollected={loadPlayer}
+        onVisibilityChange={setWashedAshoreVisible}
+      />
 
       {selectedBottle && (
         <BottlePreviewSheet

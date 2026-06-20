@@ -26,7 +26,7 @@ export default function CastSplash({ show, capCost, onDone }: Props) {
     <AnimatePresence>
       {show && (
         <motion.div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-sky-950/70 backdrop-blur-sm overflow-hidden"
+          className="fixed inset-0 z-[1100] flex items-center justify-center bg-sky-950/70 backdrop-blur-sm overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

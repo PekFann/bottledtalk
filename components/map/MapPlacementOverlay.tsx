@@ -21,8 +21,8 @@ export default function MapPlacementOverlay({
   const inRange = isWithinRadius(placementPin.lat, placementPin.lng, anchor, radiusM);
 
   return (
-    <>
-      <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
+    <div className="fixed inset-0 z-[1000] pointer-events-none">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="relative flex flex-col items-center">
           <div className="mb-1 max-w-[120px] rounded-lg bg-white/95 px-2 py-1 text-center shadow-lg border border-sky-200">
             <p className="text-[10px] font-medium text-sky-800">Drop here</p>
@@ -31,7 +31,7 @@ export default function MapPlacementOverlay({
         </div>
       </div>
 
-      <div className="absolute top-16 left-3 right-3 z-30 mx-auto max-w-lg">
+      <div className="pointer-events-auto absolute top-16 left-3 right-3 mx-auto max-w-lg">
         <div className="game-panel-light rounded-xl px-4 py-3 shadow-xl">
           <p className="text-sm font-medium text-slate-800">Drag the map to position your item</p>
           <p className="text-xs text-slate-600 mt-1">
@@ -58,6 +58,6 @@ export default function MapPlacementOverlay({
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

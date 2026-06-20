@@ -9,9 +9,10 @@ import { MapModalCloseButton } from "@/components/ui/MapModal";
 
 type Props = {
   onCollected: () => void;
+  onVisibilityChange?: (visible: boolean) => void;
 };
 
-export default function WashedAshorePrompt({ onCollected }: Props) {
+export default function WashedAshorePrompt({ onCollected, onVisibilityChange }: Props) {
   const [queue, setQueue] = useState<WashedAshoreBottle[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<string | null>(null);
@@ -27,6 +28,11 @@ export default function WashedAshorePrompt({ onCollected }: Props) {
   }, [getSupabase]);
 
   const current = queue.find((b) => !dismissed.has(b.id));
+
+  useEffect(() => {
+    onVisibilityChange?.(!!current);
+  }, [current, onVisibilityChange]);
+
   if (!current) return null;
 
   const dismiss = async () => {
@@ -50,7 +56,7 @@ export default function WashedAshorePrompt({ onCollected }: Props) {
   return (
     <AnimatePresence>
       <motion.div
-        className="absolute top-20 left-4 right-4 z-30 mx-auto max-w-lg"
+        className="fixed top-20 left-4 right-4 z-[1000] mx-auto max-w-lg pointer-events-auto"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -20, opacity: 0 }}

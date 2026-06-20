@@ -59,6 +59,7 @@ type Props = {
   onMapCenterChange?: (lat: number, lng: number) => void;
   radiusM: number;
   selectedBottleId?: string | null;
+  interactionDisabled?: boolean;
 };
 
 function createInitialViewState(userLocation: { lat: number; lng: number }): ViewState {
@@ -87,6 +88,7 @@ export default function BottleMap({
   onMapCenterChange,
   radiusM,
   selectedBottleId = null,
+  interactionDisabled = false,
 }: Props) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const mapRef = useRef<MapRef>(null);
@@ -244,6 +246,7 @@ export default function BottleMap({
   }
 
   return (
+    <div className={interactionDisabled ? "h-full w-full pointer-events-none" : "h-full w-full"}>
     <Map
       ref={mapRef}
       mapboxAccessToken={token}
@@ -323,13 +326,12 @@ export default function BottleMap({
         </div>
       </Marker>
 
-      {markers.map((m) => {
-        const lat = m.kind === "cluster" ? m.stack.lat : m.item.kind === "bottle" ? m.item.bottle.lat : m.item.tower.lat;
+      {markers.map((m, index) => {
         const selected =
           m.kind === "single" &&
           m.item.kind === "bottle" &&
           m.item.bottle.id === selectedBottleId;
-        const zIndex = markerZIndex(lat, selected);
+        const zIndex = markerZIndex(index, selected);
 
         if (m.kind === "cluster") {
           return (
@@ -367,16 +369,17 @@ export default function BottleMap({
         );
       })}
 
-      {sortedDecorations.map((decoration) => (
+      {sortedDecorations.map((decoration, index) => (
         <DecorationMarker
           key={`decoration-${decoration.id}`}
           decoration={decoration}
-          zIndex={markerZIndex(decoration.lat)}
+          zIndex={markerZIndex(markers.length + index)}
           onClick={() => {
             if (!placementMode) onSelectDecoration?.(decoration);
           }}
         />
       ))}
     </Map>
+    </div>
   );
 }

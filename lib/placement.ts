@@ -45,8 +45,8 @@ export function getMarkerLat(marker: MapMarker): number {
   return marker.item.kind === "bottle" ? marker.item.bottle.lat : marker.item.tower.lat;
 }
 
-export function markerZIndex(lat: number, selected = false): number {
-  return Math.round((90 - lat) * 1000) + (selected ? 10000 : 0);
+export function markerZIndex(index: number, selected = false): number {
+  return index + 1 + (selected ? 1000 : 0);
 }
 
 export function sortMarkersByDepth(markers: MapMarker[]): MapMarker[] {

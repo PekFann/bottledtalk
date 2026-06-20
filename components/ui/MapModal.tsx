@@ -60,7 +60,7 @@ export default function MapModal({
     : "glass-header rounded-t-xl";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div className="map-overlay-layer flex items-center justify-center bg-black/40 px-4">
       <motion.div
         className={panelBase}
         initial={{ opacity: 0, scale: 0.95 }}
