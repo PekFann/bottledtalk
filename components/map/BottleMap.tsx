@@ -11,13 +11,9 @@ import {
   createDiscoveryMaskGeoJSON,
 } from "@/lib/geo";
 import {
-  adjustCenterToKeepUserVisible,
-  clampCenterNearUser,
   getBoundsAroundPoint,
-  MAP_BOUNDS_RADIUS_MULTIPLIER,
   MAP_MIN_ZOOM_PADDING_PX,
   MAP_MIN_ZOOM_RADIUS_MULTIPLIER,
-  MAP_USER_VISIBLE_MARGIN_PX,
 } from "@/lib/mapConstraints";
 import { clusterMapItems, stackFromItems, toMapStackItems } from "@/lib/clusterMapItems";
 import { getStackItemsAtClick } from "@/lib/mapHitTest";
@@ -69,37 +65,6 @@ function createInitialViewState(userLocation: { lat: number; lng: number }): Vie
   };
 }
 
-function applyPanConstraints(
-  centerLng: number,
-  centerLat: number,
-  userLocation: { lng: number; lat: number },
-  radiusM: number,
-  map: MapEvent["target"] | undefined
-): { longitude: number; latitude: number } {
-  const maxPanM = radiusM * MAP_BOUNDS_RADIUS_MULTIPLIER;
-  let { lng, lat } = clampCenterNearUser(
-    { lng: centerLng, lat: centerLat },
-    userLocation,
-    maxPanM
-  );
-
-  if (map) {
-    const visible = adjustCenterToKeepUserVisible(
-      map,
-      userLocation.lng,
-      userLocation.lat,
-      MAP_USER_VISIBLE_MARGIN_PX
-    );
-    if (visible) {
-      lng = visible.lng;
-      lat = visible.lat;
-    }
-  }
-
-  const clamped = clampCenterNearUser({ lng, lat }, userLocation, maxPanM);
-  return { longitude: clamped.lng, latitude: clamped.lat };
-}
-
 export default function BottleMap({
   userLocation,
   anchorLocation,
@@ -115,6 +80,7 @@ export default function BottleMap({
 }: Props) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const mapRef = useRef<MapRef>(null);
+  const centeredKeyRef = useRef<string | null>(null);
   const [viewState, setViewState] = useState<ViewState>(() =>
     createInitialViewState(anchorLocation)
   );
@@ -203,10 +169,21 @@ export default function BottleMap({
   );
 
   useEffect(() => {
+    const key = footprintMode
+      ? `footprint:${anchorLocation.lat.toFixed(5)}:${anchorLocation.lng.toFixed(5)}`
+      : "gps";
+
+    if (centeredKeyRef.current === key) {
+      const map = mapRef.current?.getMap();
+      if (map) applyMinZoom(map);
+      return;
+    }
+
+    centeredKeyRef.current = key;
     setViewState(createInitialViewState(anchorLocation));
     const map = mapRef.current?.getMap();
     if (map) applyMinZoom(map);
-  }, [anchorLocation, radiusM, applyMinZoom]);
+  }, [anchorLocation, footprintMode, radiusM, applyMinZoom]);
 
   const handleMapLoad = useCallback(
     (e: MapEvent) => {
@@ -232,33 +209,6 @@ export default function BottleMap({
     setViewState({ longitude, latitude, zoom, pitch, bearing });
   }, []);
 
-  const handleMoveEnd = useCallback(() => {
-    const map = mapRef.current?.getMap();
-    if (!map) return;
-
-    const center = map.getCenter();
-    const corrected = applyPanConstraints(
-      center.lng,
-      center.lat,
-      anchorLocation,
-      radiusM,
-      map
-    );
-
-    if (
-      Math.abs(corrected.longitude - center.lng) > 1e-7 ||
-      Math.abs(corrected.latitude - center.lat) > 1e-7
-    ) {
-      setViewState({
-        longitude: corrected.longitude,
-        latitude: corrected.latitude,
-        zoom: map.getZoom(),
-        pitch: map.getPitch(),
-        bearing: map.getBearing(),
-      });
-    }
-  }, [anchorLocation, radiusM]);
-
   if (!token) {
     return (
       <div className="flex h-full items-center justify-center px-6 pt-16 text-center text-slate-600">
@@ -278,7 +228,6 @@ export default function BottleMap({
       mapStyle={MAP_STYLE}
       onLoad={handleMapLoad}
       onMove={handleMove}
-      onMoveEnd={handleMoveEnd}
     >
       <Source id="discovery-mask" type="geojson" data={maskGeoJSON}>
         <Layer
