@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BottleImage from "@/components/bottles/BottleImage";
+import GoogleSignIn from "@/components/auth/GoogleSignIn";
 
 export default function SignupPage({
   searchParams,
@@ -30,6 +31,10 @@ async function SignupForm({
             {params.error}
           </div>
         )}
+
+        <GoogleSignIn redirectTo={params.redirect ?? "/map"} mode="signup" />
+
+        <p className="text-center text-xs text-slate-500 my-4">or sign up with email</p>
 
         <form action="/auth/signup" method="post" className="space-y-4">
           <input type="hidden" name="redirect" value={params.redirect ?? "/map"} />

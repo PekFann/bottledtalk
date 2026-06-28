@@ -10,7 +10,7 @@ A location-aware web app where authenticated users drop message bottles on a map
 
 ## Features
 
-- Required sign-in (email/password)
+- Required sign-in (email/password or Google)
 - **Bottle caps** currency (100 starter) — all bottles cost caps to cast
 - **Bag** (10 slots) — save conversations manually or when they wash ashore
 - Map clustering when many bottles share the same spot
@@ -38,7 +38,7 @@ npm install
 2. In the SQL Editor, run migrations in order:
    - [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql)
    - [`supabase/migrations/003_caps_and_bag.sql`](supabase/migrations/003_caps_and_bag.sql) (bottle caps, bag, economy)
-3. Under **Authentication → Providers**, enable Email.
+3. Under **Authentication → Providers**, enable Email and Google (see [docs/GOOGLE_AUTH_SETUP.md](docs/GOOGLE_AUTH_SETUP.md)).
 4. Copy your project URL and anon key from **Settings → API**.
 
 ### 3. Get a Mapbox token
@@ -54,7 +54,10 @@ Copy `.env.example` to `.env.local` and fill in:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_MAPBOX_TOKEN=your-mapbox-public-token
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
 ```
+
+Google Client **secret** goes in Supabase (Authentication → Google), not in Next.js. See [docs/GOOGLE_AUTH_SETUP.md](docs/GOOGLE_AUTH_SETUP.md).
 
 The map uses Mapbox **outdoors-v12** (colorful terrain style) built into the app — no style env var needed.
 
@@ -89,6 +92,8 @@ Deploy `supabase/functions/cleanup-expired` and schedule it via Supabase cron or
 Deploy the Next.js app to [Vercel](https://vercel.com) with the same environment variables. Add your production URL to Supabase **Authentication → URL Configuration** redirect allowlist.
 
 For custom domain setup (`bottledtalk.com` / `www.bottledtalk.com`), see [docs/DOMAIN_SETUP.md](docs/DOMAIN_SETUP.md).
+
+For Google Sign-In without Supabase custom domains, see [docs/GOOGLE_AUTH_SETUP.md](docs/GOOGLE_AUTH_SETUP.md).
 
 **Add to Home Screen:** Works on HTTPS (production). Mobile users see an install banner on the landing page and map. Requires the web app manifest and service worker included in the project.
 
