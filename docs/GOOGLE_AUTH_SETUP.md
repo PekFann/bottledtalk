@@ -18,7 +18,10 @@ Google login uses **Google Identity Services** on `www.bottledtalk.com` and `sig
      - `https://www.bottledtalk.com`
      - `https://bottledtalk.com` (optional)
      - `http://localhost:3000`
-   - **Authorized redirect URIs:** leave empty for the ID-token flow (no `supabase.co` callback needed)
+   - **Authorized redirect URIs** (required for mobile sign-in):
+     - `https://www.bottledtalk.com/auth/google/callback`
+     - `https://bottledtalk.com/auth/google/callback`
+     - `http://localhost:3000/auth/google/callback`
 4. Copy the **Client ID** and **Client secret**
 
 ## 2. Supabase (free)
@@ -51,7 +54,15 @@ This sets new Google users’ display names from `full_name` / `name` in auth me
 
 ## Verify
 
-1. Open `https://www.bottledtalk.com/login` in incognito
+1. Open `https://www.bottledtalk.com/login` in incognito (or on your phone in **Safari**, not an in-app browser)
 2. Click **Sign in with Google**
 3. Google shows **BottledTalk** (after consent screen branding is configured)
 4. After login, you land on `/map` — address bar never shows `supabase.co`
+
+### Mobile 400 error
+
+If you see **400 Bad Request** on `accounts.google.com` on iPhone:
+
+1. Add the **redirect URIs** above in Google Cloud Console (mobile uses redirect mode, not popup).
+2. Open the site in **Safari** or **Chrome** — Google Sign-In often fails in WhatsApp/Instagram in-app browsers.
+3. Ensure `NEXT_PUBLIC_GOOGLE_CLIENT_ID` on Vercel has no extra spaces and matches the Web client ID in Google Cloud.
