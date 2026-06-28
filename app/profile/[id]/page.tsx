@@ -26,7 +26,7 @@ export default async function ProfilePage({
 
   const profileQuery = supabase
     .from("profiles")
-    .select("id, display_name, avatar_url, bio, created_at")
+    .select("id, display_name, avatar_url, avatar_bg_color, bio, created_at")
     .eq("id", id)
     .single();
 
@@ -78,6 +78,8 @@ export default async function ProfilePage({
           profileId={profile.id}
           displayName={profile.display_name}
           bio={profile.bio}
+          avatarUrl={profile.avatar_url}
+          avatarBgColor={profile.avatar_bg_color}
           isOwnProfile={isOwnProfile}
           initialFriendStatus={friendStatus}
           pendingRequestId={pendingRequestId}

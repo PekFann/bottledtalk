@@ -6,6 +6,7 @@ import { UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Friend, FriendRequest, Profile } from "@/lib/types";
 import MapModal from "@/components/ui/MapModal";
+import ProfileAvatar from "@/components/profile/ProfileAvatar";
 
 type Tab = "friends" | "incoming" | "sent";
 
@@ -91,9 +92,12 @@ export default function FriendsModal({ currentUserId, onClose }: Props) {
               onClick={onClose}
               className="flex items-center gap-3 rounded-lg glass-card p-3 hover:bg-sky-50"
             >
-              <div className="h-9 w-9 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 font-semibold text-sm">
-                {f.display_name.charAt(0).toUpperCase()}
-              </div>
+              <ProfileAvatar
+                displayName={f.display_name}
+                avatarUrl={f.avatar_url}
+                avatarBgColor={f.avatar_bg_color}
+                size="md"
+              />
               <div className="min-w-0">
                 <p className="font-medium text-sm text-slate-900">{f.display_name}</p>
                 {f.bio && <p className="text-xs text-slate-500 truncate">{f.bio}</p>}

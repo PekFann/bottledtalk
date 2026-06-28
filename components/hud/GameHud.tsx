@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Coins, MessageCircle } from "lucide-react";
+import { Coins } from "lucide-react";
 import UserMenu from "@/components/hud/UserMenu";
+import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { getJournalTitle } from "@/lib/display";
 
 type Props = {
@@ -11,6 +12,8 @@ type Props = {
   displayName: string | null;
   email: string | null;
   userId: string | null;
+  avatarUrl?: string | null;
+  avatarBgColor?: string | null;
 };
 
 export default function GameHud({
@@ -19,11 +22,20 @@ export default function GameHud({
   displayName,
   email,
   userId,
+  avatarUrl,
+  avatarBgColor,
 }: Props) {
+  const journalName = displayName ?? "Sailor";
+
   return (
     <header className="game-hud-bar absolute top-0 left-0 right-0 z-20 flex items-center justify-between gap-3 px-4 py-2.5 pt-[max(0.5rem,env(safe-area-inset-top))]">
       <div className="flex items-center gap-2 min-w-0">
-        <MessageCircle className="h-4 w-4 shrink-0 text-teal-500" strokeWidth={2.25} />
+        <ProfileAvatar
+          displayName={journalName}
+          avatarUrl={avatarUrl}
+          avatarBgColor={avatarBgColor}
+          size="sm"
+        />
         <span className="font-medium text-slate-700 truncate text-base tracking-tight">
           {getJournalTitle(displayName)}
         </span>

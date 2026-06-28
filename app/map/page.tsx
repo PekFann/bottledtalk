@@ -63,6 +63,8 @@ export default function MapPage() {
     cost: 0,
   });
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarBgColor, setAvatarBgColor] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [washedAshoreVisible, setWashedAshoreVisible] = useState(false);
@@ -149,7 +151,7 @@ export default function MapPage() {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("bottle_caps, bag_slot_limit, display_name")
+      .select("bottle_caps, bag_slot_limit, display_name, avatar_url, avatar_bg_color")
       .eq("id", user.id)
       .single();
 
@@ -157,6 +159,8 @@ export default function MapPage() {
       setBottleCaps(profile.bottle_caps ?? 0);
       setBagLimit(profile.bag_slot_limit ?? DEFAULT_BAG_SLOTS);
       setDisplayName(profile.display_name ?? null);
+      setAvatarUrl(profile.avatar_url ?? null);
+      setAvatarBgColor(profile.avatar_bg_color ?? null);
     }
 
     const { data: items } = await supabase
@@ -205,6 +209,14 @@ export default function MapPage() {
     loadTypes();
     loadPlayer();
   }, [getSupabase, loadPlayer]);
+
+  useEffect(() => {
+    const onFocus = () => {
+      void loadPlayer();
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [loadPlayer]);
 
   useEffect(() => {
     if (!anchorLocation) return;
@@ -316,6 +328,8 @@ export default function MapPage() {
         displayName={displayName}
         email={userEmail}
         userId={userId}
+        avatarUrl={avatarUrl}
+        avatarBgColor={avatarBgColor}
       />
 
       {footprintMode && (

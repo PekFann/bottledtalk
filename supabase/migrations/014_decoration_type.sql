@@ -3,6 +3,8 @@
 alter table public.map_decorations
   add column if not exists decoration_type text not null default 'flower';
 
+drop function if exists public.nearby_decorations(double precision, double precision, double precision);
+
 create or replace function public.nearby_decorations(
   lat double precision,
   lng double precision,

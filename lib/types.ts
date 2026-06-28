@@ -2,6 +2,7 @@ export type Profile = {
   id: string;
   display_name: string;
   avatar_url: string | null;
+  avatar_bg_color?: string | null;
   bio?: string | null;
   bottle_caps?: number;
   bag_slot_limit?: number;
@@ -187,6 +188,7 @@ export type Friend = {
   friend_id: string;
   display_name: string;
   avatar_url: string | null;
+  avatar_bg_color?: string | null;
   bio: string | null;
 };
 
