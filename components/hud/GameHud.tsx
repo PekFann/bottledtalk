@@ -34,7 +34,7 @@ export default function GameHud({
           displayName={journalName}
           avatarUrl={avatarUrl}
           avatarBgColor={avatarBgColor}
-          size="sm"
+          size="hud"
         />
         <span className="font-medium text-slate-700 truncate text-base tracking-tight">
           {getJournalTitle(displayName)}

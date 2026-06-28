@@ -3,12 +3,13 @@ import {
   normalizeAvatarBgColor,
 } from "@/lib/profileAvatars";
 
-type Size = "sm" | "md" | "lg";
+type Size = "sm" | "hud" | "md" | "lg";
 
-const sizeClasses: Record<Size, { outer: string; text: string; img: string }> = {
-  sm: { outer: "h-8 w-8", text: "text-sm", img: "h-[70%] w-[70%]" },
-  md: { outer: "h-11 w-11", text: "text-base", img: "h-[72%] w-[72%]" },
-  lg: { outer: "h-20 w-20", text: "text-2xl", img: "h-[76%] w-[76%]" },
+const sizeClasses: Record<Size, { outer: string; text: string }> = {
+  sm: { outer: "h-8 w-8", text: "text-sm" },
+  hud: { outer: "h-12 w-12", text: "text-base" },
+  md: { outer: "h-11 w-11", text: "text-base" },
+  lg: { outer: "h-20 w-20", text: "text-2xl" },
 };
 
 type Props = {
@@ -42,7 +43,7 @@ export default function ProfileAvatar({
         <img
           src={src}
           alt=""
-          className={`object-contain ${sizes.img}`}
+          className="h-full w-full object-cover"
           draggable={false}
         />
       ) : (
