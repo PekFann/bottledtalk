@@ -1,6 +1,7 @@
 import Link from "next/link";
 import BottleImage from "@/components/bottles/BottleImage";
 import GoogleSignIn from "@/components/auth/GoogleSignIn";
+import { isGoogleAuthEnabled } from "@/lib/googleAuthConfig";
 
 export default async function LoginPage({
   searchParams,
@@ -8,6 +9,7 @@ export default async function LoginPage({
   searchParams: Promise<{ redirect?: string; error?: string }>;
 }) {
   const params = await searchParams;
+  const googleAuth = isGoogleAuthEnabled();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-100 to-blue-50 px-4">
@@ -24,9 +26,11 @@ export default async function LoginPage({
           </div>
         )}
 
-        <GoogleSignIn redirectTo={params.redirect ?? "/map"} mode="signin" />
+        {googleAuth && <GoogleSignIn redirectTo={params.redirect ?? "/map"} mode="signin" />}
 
-        <p className="text-center text-xs text-slate-500 my-4">or continue with email</p>
+        {googleAuth && (
+          <p className="text-center text-xs text-slate-500 my-4">or continue with email</p>
+        )}
 
         <form action="/auth/login" method="post" className="space-y-4">
           <input type="hidden" name="redirect" value={params.redirect ?? "/map"} />
