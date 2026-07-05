@@ -58,7 +58,7 @@ export default function BottleMarker({ bottle, onClick, isSelected = false, zInd
           initial={false}
           animate={
             isSelected
-              ? { y: -12, scale: 1.1 }
+              ? { y: -18, scale: 1.1 }
               : { y: [0, -6, 0], scale: 1 }
           }
           transition={
@@ -68,11 +68,11 @@ export default function BottleMarker({ bottle, onClick, isSelected = false, zInd
           }
           whileTap={{ scale: 0.9 }}
         >
-          <BottleImage size="lg" className="transition-transform group-hover:scale-110" />
+          <BottleImage size="map" className="transition-transform group-hover:scale-110" />
         </motion.div>
 
         <motion.div
-          className="mt-0.5 h-2.5 w-10 rounded-[50%] bg-black/30 blur-[1px]"
+          className="mt-0.5 h-[15px] w-[60px] rounded-[50%] bg-black/30 blur-[1px]"
           animate={
             isSelected
               ? { scale: 0.75, opacity: 0.2 }

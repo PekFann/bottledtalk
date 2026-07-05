@@ -4,6 +4,7 @@ const SIZES = {
   sm: "h-7 w-7",
   md: "h-11 w-11",
   lg: "h-[52px] w-[52px]",
+  map: "h-[78px] w-[78px]",
   xl: "h-14 w-14",
 } as const;
 
@@ -11,6 +12,7 @@ const PIXEL_SIZES = {
   sm: 28,
   md: 44,
   lg: 52,
+  map: 78,
   xl: 56,
 } as const;
 
