@@ -12,10 +12,13 @@ type Props = {
   onVisibilityChange?: (visible: boolean) => void;
 };
 
+type Action = "keep" | "dismiss" | null;
+
 export default function WashedAshorePrompt({ onCollected, onVisibilityChange }: Props) {
   const [queue, setQueue] = useState<WashedAshoreBottle[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState<string | null>(null);
+  const [action, setAction] = useState<Action>(null);
+  const [error, setError] = useState<string | null>(null);
   const getSupabase = useCallback(() => createClient(), []);
 
   useEffect(() => {
@@ -28,30 +31,61 @@ export default function WashedAshorePrompt({ onCollected, onVisibilityChange }: 
   }, [getSupabase]);
 
   const current = queue.find((b) => !dismissed.has(b.id));
+  const busy = action !== null;
 
   useEffect(() => {
     onVisibilityChange?.(!!current);
   }, [current, onVisibilityChange]);
 
-  if (!current) return null;
-
   const dismiss = async () => {
+    if (!current || busy) return;
+
+    const bottleId = current.id;
+    setAction("dismiss");
+    setError(null);
+
     const supabase = getSupabase();
-    await supabase.rpc("dismiss_washed_ashore", { p_bottle_id: current.id });
-    setDismissed((s) => new Set(s).add(current.id));
+    const { error: rpcError } = await supabase.rpc("dismiss_washed_ashore", {
+      p_bottle_id: bottleId,
+    });
+
+    setAction(null);
+
+    if (rpcError) {
+      setError(rpcError.message || "Could not save — try again");
+      return;
+    }
+
+    setDismissed((s) => new Set(s).add(bottleId));
+    setQueue((items) => items.filter((b) => b.id !== bottleId));
   };
 
   const keep = async () => {
-    setLoading(current.id);
+    if (!current || busy) return;
+
+    const bottleId = current.id;
+    setAction("keep");
+    setError(null);
+
     const supabase = getSupabase();
-    const { error } = await supabase.rpc("collect_to_bag", {
-      p_bottle_id: current.id,
+    const { error: rpcError } = await supabase.rpc("collect_to_bag", {
+      p_bottle_id: bottleId,
       p_reason: "expired",
     });
-    setLoading(null);
-    setDismissed((s) => new Set(s).add(current.id));
-    if (!error) onCollected();
+
+    setAction(null);
+
+    if (rpcError) {
+      setError(rpcError.message || "Could not add to bag — try again");
+      return;
+    }
+
+    setDismissed((s) => new Set(s).add(bottleId));
+    setQueue((items) => items.filter((b) => b.id !== bottleId));
+    onCollected();
   };
+
+  if (!current) return null;
 
   return (
     <AnimatePresence>
@@ -65,27 +99,33 @@ export default function WashedAshorePrompt({ onCollected, onVisibilityChange }: 
           <div className="glass-card rounded-xl p-4">
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm font-bold text-sky-900">Washed ashore</p>
-              <MapModalCloseButton onClick={dismiss} />
+              <MapModalCloseButton onClick={busy ? () => {} : dismiss} />
             </div>
             <p className="text-sm text-slate-700 mt-1 flex items-center gap-2">
               <BottleImage size="sm" className="shrink-0 inline-block" />
               &ldquo;{current.title}&rdquo; expired. Keep it in your bag?
             </p>
+            {error && (
+              <p className="text-sm text-red-600 mt-2" role="alert">
+                {error}
+              </p>
+            )}
             <div className="flex gap-2 mt-3">
               <button
                 type="button"
                 onClick={keep}
-                disabled={loading === current.id}
+                disabled={busy}
                 className="flex-1 btn-primary text-sm py-2 disabled:opacity-50"
               >
-                Keep in bag
+                {action === "keep" ? "Saving…" : "Keep in bag"}
               </button>
               <button
                 type="button"
                 onClick={dismiss}
-                className="flex-1 rounded-lg border border-slate-200 bg-white text-sm py-2 font-medium text-slate-700 hover:bg-slate-50 shadow-sm"
+                disabled={busy}
+                className="flex-1 rounded-lg border border-slate-200 bg-white text-sm py-2 font-medium text-slate-700 hover:bg-slate-50 shadow-sm disabled:opacity-50"
               >
-                Let it drift
+                {action === "dismiss" ? "Saving…" : "Let it drift"}
               </button>
             </div>
           </div>
