@@ -21,6 +21,7 @@ import {
   getDecorationsByCategory,
 } from "@/lib/decorationCatalog";
 import PinInput from "@/components/ui/PinInput";
+import BottleImage from "@/components/bottles/BottleImage";
 
 type Tab = "bottles" | "tower" | "footprint" | "decoration";
 
@@ -213,11 +214,11 @@ export default function ShopModal({
                         }`}
                       >
                         <div
-                          className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-xl text-4xl"
+                          className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-xl"
                           style={{ backgroundColor: `${type.marker_color}22` }}
                           aria-hidden
                         >
-                          {type.icon}
+                          <BottleImage size="lg" className="h-14 w-14" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-lg text-slate-900">{type.name}</p>

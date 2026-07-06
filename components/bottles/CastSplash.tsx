@@ -18,7 +18,7 @@ function StardustBurst({ show }: { show: boolean }) {
     () =>
       Array.from({ length: PARTICLE_COUNT }, (_, i) => {
         const angle = (i / PARTICLE_COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-        const distance = 80 + Math.random() * 100;
+        const distance = 64 + Math.random() * 80;
         return {
           id: i,
           x: Math.cos(angle) * distance,
@@ -104,7 +104,7 @@ export default function CastSplash({ show, capCost, onDone }: Props) {
               <motion.div
                 initial={{ y: "-45vh", opacity: 0, rotate: -18 }}
                 animate={{
-                  y: [null, 0, -48, 0, -20, 0],
+                  y: [null, 0, -38, 0, -16, 0],
                   opacity: 1,
                   rotate: [-18, 10, -6, 4, -2, 0],
                 }}
@@ -124,7 +124,7 @@ export default function CastSplash({ show, capCost, onDone }: Props) {
               >
                 <BottleImage
                   size="lg"
-                  className="h-[min(614px,57.6vw)] w-[min(614px,57.6vw)] max-h-[60vh] drop-shadow-2xl"
+                  className="h-[min(491px,46.08vw)] w-[min(491px,46.08vw)] max-h-[48vh] drop-shadow-2xl"
                 />
               </motion.div>
               <StardustBurst show={burst} />

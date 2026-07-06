@@ -6,6 +6,7 @@ import type { MouseEvent } from "react";
 import type { NearbyBottle } from "@/lib/types";
 import LiveCountdown from "@/components/ui/LiveCountdown";
 import BottleImage from "@/components/bottles/BottleImage";
+import { bottleFloatDelaySec } from "@/lib/bottleAssets";
 
 type Props = {
   bottle: NearbyBottle;
@@ -15,6 +16,14 @@ type Props = {
 };
 
 export default function BottleMarker({ bottle, onClick, isSelected = false, zIndex = 0 }: Props) {
+  const floatDelay = bottleFloatDelaySec(bottle.id);
+  const floatTransition = {
+    repeat: Infinity,
+    duration: 3,
+    ease: "easeInOut" as const,
+    delay: floatDelay,
+  };
+
   return (
     <Marker
       longitude={bottle.lng}
@@ -55,7 +64,7 @@ export default function BottleMarker({ bottle, onClick, isSelected = false, zInd
 
         <motion.div
           className="relative"
-          initial={false}
+          initial={{ y: 0, scale: 1 }}
           animate={
             isSelected
               ? { y: -14, scale: 1.1 }
@@ -64,7 +73,7 @@ export default function BottleMarker({ bottle, onClick, isSelected = false, zInd
           transition={
             isSelected
               ? { type: "spring", stiffness: 400, damping: 25 }
-              : { repeat: Infinity, duration: 3, ease: "easeInOut" }
+              : floatTransition
           }
           whileTap={{ scale: 0.9 }}
         >
@@ -72,16 +81,17 @@ export default function BottleMarker({ bottle, onClick, isSelected = false, zInd
         </motion.div>
 
         <motion.div
-          className="mt-0.5 h-3 w-12 rounded-[50%] bg-black/30 blur-[1px]"
+          className="mt-0.5 h-3 w-12 rounded-[50%] bg-black/45 blur-[1.5px]"
+          initial={{ scale: 1, opacity: 0.35 }}
           animate={
             isSelected
               ? { scale: 0.75, opacity: 0.2 }
-              : { scale: [1, 0.85, 1], opacity: [0.35, 0.25, 0.35] }
+              : { scale: [1, 0.85, 1], opacity: [0.45, 0.3, 0.45] }
           }
           transition={
             isSelected
               ? { duration: 0.2 }
-              : { repeat: Infinity, duration: 3, ease: "easeInOut" }
+              : floatTransition
           }
           aria-hidden
         />
