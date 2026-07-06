@@ -58,7 +58,7 @@ export default function BottleMarker({ bottle, onClick, isSelected = false, zInd
           initial={false}
           animate={
             isSelected
-              ? { y: -18, scale: 1.1 }
+              ? { y: -14, scale: 1.1 }
               : { y: [0, -6, 0], scale: 1 }
           }
           transition={
@@ -72,7 +72,7 @@ export default function BottleMarker({ bottle, onClick, isSelected = false, zInd
         </motion.div>
 
         <motion.div
-          className="mt-0.5 h-[15px] w-[60px] rounded-[50%] bg-black/30 blur-[1px]"
+          className="mt-0.5 h-3 w-12 rounded-[50%] bg-black/30 blur-[1px]"
           animate={
             isSelected
               ? { scale: 0.75, opacity: 0.2 }

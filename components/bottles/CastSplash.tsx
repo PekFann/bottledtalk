@@ -124,7 +124,7 @@ export default function CastSplash({ show, capCost, onDone }: Props) {
               >
                 <BottleImage
                   size="lg"
-                  className="h-[min(768px,72vw)] w-[min(768px,72vw)] max-h-[75vh] drop-shadow-2xl"
+                  className="h-[min(614px,57.6vw)] w-[min(614px,57.6vw)] max-h-[60vh] drop-shadow-2xl"
                 />
               </motion.div>
               <StardustBurst show={burst} />

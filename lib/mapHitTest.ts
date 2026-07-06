@@ -1,7 +1,7 @@
 import type { Map } from "mapbox-gl";
 import type { MapStackItem } from "@/lib/types";
 
-export const MAP_HIT_RADIUS_PX = 70;
+export const MAP_HIT_RADIUS_PX = 56;
 
 function itemCoords(item: MapStackItem): [number, number] {
   if (item.kind === "bottle") {
