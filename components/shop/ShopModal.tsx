@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Coins, Radio, Footprints, ChevronLeft, Sparkles } from "lucide-react";
+import { Radio, Footprints, ChevronLeft, Sparkles } from "lucide-react";
 import MapModal from "@/components/ui/MapModal";
+import CapAmount from "@/components/ui/CapAmount";
+import BottleCapIcon from "@/components/ui/BottleCapIcon";
 import { getShopBottleTypes } from "@/lib/bottleCatalog";
 import type { BottleType } from "@/lib/types";
 import {
@@ -158,8 +160,9 @@ export default function ShopModal({
       title="Shop"
       subtitle={
         <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-normal">
-          <Coins className="h-3 w-3 text-amber-500" />
-          {bottleCaps} caps available
+          {bottleCaps}
+          <BottleCapIcon size="sm" />
+          available
         </p>
       }
       headerBelow={
@@ -227,8 +230,8 @@ export default function ShopModal({
                             <span className="rounded-full bg-sky-500 px-2.5 py-0.5 text-xs font-normal text-white">
                               {formatDuration(type.duration_hours)}
                             </span>
-                            <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-normal text-white">
-                              {type.cap_cost} caps
+                            <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-normal text-white inline-flex items-center">
+                              <CapAmount amount={type.cap_cost} size="sm" className="text-white" />
                             </span>
                             {type.is_sealed && (
                               <span className="rounded-full bg-violet-500 px-2.5 py-0.5 text-xs font-normal text-white">
@@ -282,12 +285,14 @@ export default function ShopModal({
           </div>
 
           {selectedTypeId && !canAffordBottle && selectedType && !footprintMode && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">Need {bottleCost} caps — you have {bottleCaps}</p>
+            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 flex flex-wrap items-center gap-1">
+              Need <CapAmount amount={bottleCost} /> — you have <CapAmount amount={bottleCaps} />
+            </p>
           )}
           {error && <div className="rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
           {selectedTypeId && (
             <button type="submit" disabled={footprintMode || !canAffordBottle} className="w-full btn-primary-block font-medium py-3">
-              Choose location on map (−{bottleCost} caps)
+              Choose location on map (<CapAmount amount={bottleCost} prefix="−" />)
             </button>
           )}
         </form>
@@ -303,11 +308,13 @@ export default function ShopModal({
             <p className="text-sm text-slate-600 mt-2">
               Place a tower within your view. Anyone within 1 km gets 5 km radar for {SIGNAL_TOWER_DAYS} days.
             </p>
-            <p className="text-sm font-normal text-amber-700 mt-3">{SIGNAL_TOWER_COST} caps</p>
+            <p className="text-sm font-normal text-amber-700 mt-3">
+              <CapAmount amount={SIGNAL_TOWER_COST} className="text-amber-700" />
+            </p>
           </div>
           {error && <div className="rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
           <button type="button" onClick={startTowerPlacement} disabled={bottleCaps < SIGNAL_TOWER_COST} className="w-full btn-primary-block font-medium py-3 disabled:opacity-50">
-            Choose location on map (−{SIGNAL_TOWER_COST} caps)
+            Choose location on map (<CapAmount amount={SIGNAL_TOWER_COST} prefix="−" />)
           </button>
         </div>
       )}
@@ -322,7 +329,9 @@ export default function ShopModal({
             <p className="text-sm text-slate-600 mt-2">
               Mark a spot within your view. Return anytime for {FOOTPRINT_DAYS} days to browse 2 km and comment remotely.
             </p>
-            <p className="text-sm font-normal text-amber-700 mt-3">{FOOTPRINT_COST} caps</p>
+            <p className="text-sm font-normal text-amber-700 mt-3">
+              <CapAmount amount={FOOTPRINT_COST} className="text-amber-700" />
+            </p>
           </div>
           <div className="text-left">
             <label htmlFor="fp-name" className="block text-sm font-medium text-slate-700 mb-1.5">Name</label>
@@ -330,7 +339,7 @@ export default function ShopModal({
           </div>
           {error && <div className="rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
           <button type="submit" disabled={bottleCaps < FOOTPRINT_COST} className="w-full btn-primary-block font-medium py-3 disabled:opacity-50">
-            Choose location on map (−{FOOTPRINT_COST} caps)
+            Choose location on map (<CapAmount amount={FOOTPRINT_COST} prefix="−" />)
           </button>
         </form>
       )}
@@ -348,7 +357,10 @@ export default function ShopModal({
                   Pick something to place on the map. Others can read your note — no replies, just wonder. Lasts{" "}
                   {DECORATION_DAYS} days.
                 </p>
-                <p className="text-sm font-normal text-amber-700 mt-3">{DECORATION_COST} caps each</p>
+                <p className="text-sm font-normal text-amber-700 mt-3 inline-flex items-center gap-1 justify-center">
+                  <CapAmount amount={DECORATION_COST} className="text-amber-700" />
+                  each
+                </p>
               </div>
 
               {DECORATION_CATEGORIES.map((category) => (
@@ -437,8 +449,8 @@ export default function ShopModal({
           )}
 
           {selectedDecorationTypeId && bottleCaps < DECORATION_COST && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
-              Need {DECORATION_COST} caps — you have {bottleCaps}
+            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 flex flex-wrap items-center gap-1">
+              Need <CapAmount amount={DECORATION_COST} /> — you have <CapAmount amount={bottleCaps} />
             </p>
           )}
           {error && <div className="rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
@@ -448,7 +460,7 @@ export default function ShopModal({
               disabled={bottleCaps < DECORATION_COST}
               className="w-full btn-primary-block font-medium py-3 disabled:opacity-50"
             >
-              Choose location on map (−{DECORATION_COST} caps)
+              Choose location on map (<CapAmount amount={DECORATION_COST} prefix="−" />)
             </button>
           )}
         </form>

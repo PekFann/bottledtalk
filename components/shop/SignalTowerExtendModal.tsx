@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { SignalTower } from "@/lib/types";
 import { TOWER_EXTEND_7D_COST, TOWER_EXTEND_30D_COST } from "@/lib/types";
 import MapModal from "@/components/ui/MapModal";
+import CapAmount from "@/components/ui/CapAmount";
 import LiveCountdown from "@/components/ui/LiveCountdown";
 
 type Props = {
@@ -64,8 +65,8 @@ export default function SignalTowerExtendModal({
           className="w-full rounded-lg border border-slate-200 bg-white py-2.5 text-sm text-slate-700 hover:bg-slate-50 shadow-sm disabled:opacity-50"
         >
           +7 days{" "}
-          <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-normal text-white">
-            −{TOWER_EXTEND_7D_COST} caps
+          <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-normal text-white inline-flex items-center">
+            <CapAmount amount={TOWER_EXTEND_7D_COST} prefix="−" size="sm" className="text-white" />
           </span>
         </button>
         <button
@@ -75,8 +76,8 @@ export default function SignalTowerExtendModal({
           className="w-full rounded-lg border border-slate-200 bg-white py-2.5 text-sm text-slate-700 hover:bg-slate-50 shadow-sm disabled:opacity-50"
         >
           +30 days{" "}
-          <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-normal text-white">
-            −{TOWER_EXTEND_30D_COST} caps
+          <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-normal text-white inline-flex items-center">
+            <CapAmount amount={TOWER_EXTEND_30D_COST} prefix="−" size="sm" className="text-white" />
           </span>
         </button>
       </div>

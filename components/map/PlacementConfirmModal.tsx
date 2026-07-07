@@ -6,6 +6,7 @@ import type { PlacementIntent } from "@/lib/placement";
 import { placementKindLabel, placementLabel } from "@/lib/placement";
 import { getDecorationType } from "@/lib/decorationCatalog";
 import MapModal from "@/components/ui/MapModal";
+import CapAmount from "@/components/ui/CapAmount";
 
 type Props = {
   intent: PlacementIntent;
@@ -104,8 +105,9 @@ export default function PlacementConfirmModal({
       maxWidth="sm"
     >
       <div className="glass-card rounded-lg p-4 space-y-2 text-sm text-slate-700">
-        <p>
-          <span className="font-medium text-slate-900">Cost:</span> {intent.capCost} caps
+        <p className="flex items-center gap-1">
+          <span className="font-medium text-slate-900">Cost:</span>{" "}
+          <CapAmount amount={intent.capCost} />
         </p>
         <p>
           <span className="font-medium text-slate-900">Location:</span>{" "}
@@ -150,7 +152,13 @@ export default function PlacementConfirmModal({
           disabled={submitting}
           className="flex-1 btn-primary-block py-2.5 text-sm disabled:opacity-50"
         >
-          {submitting ? "Placing…" : `Place (−${intent.capCost} caps)`}
+          {submitting ? (
+            "Placing…"
+          ) : (
+            <>
+              Place (<CapAmount amount={intent.capCost} prefix="−" />)
+            </>
+          )}
         </button>
       </div>
     </MapModal>

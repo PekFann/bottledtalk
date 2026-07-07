@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Coins } from "lucide-react";
 import UserMenu from "@/components/hud/UserMenu";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
+import BottleCapIcon from "@/components/ui/BottleCapIcon";
 import { getJournalTitle } from "@/lib/display";
 
 type Props = {
@@ -47,10 +47,10 @@ export default function GameHud({
           animate={capPulse ? { scale: [1, 1.1, 1] } : {}}
           transition={{ duration: 0.35 }}
         >
-          <Coins className="h-3.5 w-3.5 text-amber-600" strokeWidth={2.25} />
           <span className="text-sm text-slate-700 font-normal">
             {bottleCaps}
           </span>
+          <BottleCapIcon size="sm" />
         </motion.div>
 
         <UserMenu displayName={displayName} email={email} userId={userId} />

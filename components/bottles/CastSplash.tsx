@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BottleImage from "@/components/bottles/BottleImage";
+import CapAmount from "@/components/ui/CapAmount";
 
 type Props = {
   show: boolean;
@@ -135,7 +136,9 @@ export default function CastSplash({ show, capCost, onDone }: Props) {
               transition={{ delay: 0.9, duration: 0.35 }}
             >
               <p className="text-2xl font-bold text-white">Bottle cast!</p>
-              <p className="text-amber-300 font-normal mt-2">-{capCost} caps</p>
+              <p className="text-amber-300 font-normal mt-2 flex items-center justify-center gap-1">
+                <CapAmount amount={capCost} prefix="−" className="text-amber-300" />
+              </p>
             </motion.div>
           </div>
         </motion.div>
