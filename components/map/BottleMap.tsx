@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } fr
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox";
 import type { MapEvent, MapRef, ViewStateChangeEvent } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { NearbyBottle, MapStackItem, SignalTower, MapDecoration, MapMarker } from "@/lib/types";
+import type { NearbyBottle, MapStackItem, SignalTower, MapDecoration, MapCapSpawn, MapMarker } from "@/lib/types";
 import { CLUSTER_RADIUS_M, TOWER_PROXIMITY_M } from "@/lib/types";
 import {
   getMarkerLat,
@@ -29,6 +29,7 @@ import BottleMarker from "@/components/bottles/BottleMarker";
 import ClusterMarker from "@/components/bottles/ClusterMarker";
 import SignalTowerMarker from "@/components/map/SignalTowerMarker";
 import DecorationMarker from "@/components/map/DecorationMarker";
+import CapSpawnMarker from "@/components/map/CapSpawnMarker";
 import { Footprints } from "lucide-react";
 
 const MAP_STYLE = "mapbox://styles/mapbox/outdoors-v12";
@@ -55,6 +56,7 @@ type Props = {
   bottles: NearbyBottle[];
   towers?: SignalTower[];
   decorations?: MapDecoration[];
+  capSpawns?: MapCapSpawn[];
   currentUserId?: string;
   footprintMode?: boolean;
   placementMode?: boolean;
@@ -62,6 +64,8 @@ type Props = {
   onSelectStack: (items: MapStackItem[]) => void;
   onSelectTower?: (tower: SignalTower) => void;
   onSelectDecoration?: (decoration: MapDecoration) => void;
+  onCollectCap?: (spawn: MapCapSpawn) => void;
+  collectingCapId?: string | null;
   onMapCenterChange?: (lat: number, lng: number) => void;
   radiusM: number;
   selectedBottleId?: string | null;
@@ -84,6 +88,7 @@ export default function BottleMap({
   bottles,
   towers = [],
   decorations = [],
+  capSpawns = [],
   currentUserId,
   footprintMode = false,
   placementMode = false,
@@ -91,6 +96,8 @@ export default function BottleMap({
   onSelectStack,
   onSelectTower,
   onSelectDecoration,
+  onCollectCap,
+  collectingCapId = null,
   onMapCenterChange,
   radiusM,
   selectedBottleId = null,
@@ -135,21 +142,35 @@ export default function BottleMap({
 
   type DepthItem =
     | { kind: "marker"; marker: MapMarker }
+    | { kind: "capSpawn"; spawn: MapCapSpawn }
     | { kind: "decoration"; decoration: MapDecoration };
 
   const depthItems = useMemo(() => {
     const items: DepthItem[] = [
       ...markers.map((marker) => ({ kind: "marker" as const, marker })),
+      ...capSpawns.map((spawn) => ({ kind: "capSpawn" as const, spawn })),
       ...decorations.map((decoration) => ({ kind: "decoration" as const, decoration })),
     ];
     return items.sort((a, b) => {
-      const latA = a.kind === "marker" ? getMarkerLat(a.marker) : a.decoration.lat;
-      const latB = b.kind === "marker" ? getMarkerLat(b.marker) : b.decoration.lat;
-      const rankA = a.kind === "decoration" ? 2 : getMapMarkerDepthRank(a.marker);
-      const rankB = b.kind === "decoration" ? 2 : getMapMarkerDepthRank(b.marker);
+      const latA =
+        a.kind === "marker"
+          ? getMarkerLat(a.marker)
+          : a.kind === "capSpawn"
+            ? a.spawn.lat
+            : a.decoration.lat;
+      const latB =
+        b.kind === "marker"
+          ? getMarkerLat(b.marker)
+          : b.kind === "capSpawn"
+            ? b.spawn.lat
+            : b.decoration.lat;
+      const rankA =
+        a.kind === "decoration" ? 2 : a.kind === "capSpawn" ? 1 : getMapMarkerDepthRank(a.marker);
+      const rankB =
+        b.kind === "decoration" ? 2 : b.kind === "capSpawn" ? 1 : getMapMarkerDepthRank(b.marker);
       return sortByMapDepthLat(latA, latB, rankA, rankB);
     });
-  }, [markers, decorations]);
+  }, [markers, capSpawns, decorations]);
 
   const resolveClickAtPoint = useCallback(
     (point: { x: number; y: number }) => {
@@ -346,6 +367,20 @@ export default function BottleMap({
       </Marker>
 
       {depthItems.map((item, index) => {
+        if (item.kind === "capSpawn") {
+          return (
+            <CapSpawnMarker
+              key={`cap-${item.spawn.id}`}
+              spawn={item.spawn}
+              zIndex={markerZIndex(index)}
+              disabled={collectingCapId === item.spawn.id}
+              onClick={() => {
+                if (!placementMode) onCollectCap?.(item.spawn);
+              }}
+            />
+          );
+        }
+
         if (item.kind === "decoration") {
           return (
             <DecorationMarker

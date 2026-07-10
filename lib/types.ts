@@ -163,6 +163,12 @@ export type MapDecoration = {
   creator_name: string;
 };
 
+export type MapCapSpawn = {
+  id: string;
+  lat: number;
+  lng: number;
+};
+
 export type Footprint = {
   id: string;
   user_id: string;

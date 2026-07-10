@@ -11,6 +11,7 @@ import type {
   Footprint,
   MapAnchor,
   MapDecoration,
+  MapCapSpawn,
 } from "@/lib/types";
 import { FOOTPRINT_RADIUS_M, DEFAULT_BAG_SLOTS } from "@/lib/types";
 import type { PlacementIntent } from "@/lib/placement";
@@ -40,6 +41,8 @@ export default function MapPage() {
   const [bottles, setBottles] = useState<NearbyBottle[]>([]);
   const [towers, setTowers] = useState<SignalTower[]>([]);
   const [decorations, setDecorations] = useState<MapDecoration[]>([]);
+  const [capSpawns, setCapSpawns] = useState<MapCapSpawn[]>([]);
+  const [collectingCapId, setCollectingCapId] = useState<string | null>(null);
   const [bottleTypes, setBottleTypes] = useState<BottleType[]>([]);
   const [selectedBottle, setSelectedBottle] = useState<NearbyBottle | null>(null);
   const [stackItems, setStackItems] = useState<MapStackItem[] | null>(null);
@@ -114,7 +117,7 @@ export default function MapPage() {
 
       if (!isFootprint) setDiscoveryRadius(radius);
 
-      const [bottlesRes, towersRes, decorationsRes] = await Promise.all([
+      const [bottlesRes, towersRes, decorationsRes, capSpawnsRes] = await Promise.all([
         supabase.rpc("nearby_bottles", {
           lat,
           lng,
@@ -130,11 +133,17 @@ export default function MapPage() {
           lng,
           radius_m: radius,
         }),
+        supabase.rpc("nearby_map_cap_spawns", {
+          lat,
+          lng,
+          radius_m: radius,
+        }),
       ]);
 
       if (!bottlesRes.error && bottlesRes.data) setBottles(bottlesRes.data);
       if (!towersRes.error && towersRes.data) setTowers(towersRes.data);
       if (!decorationsRes.error && decorationsRes.data) setDecorations(decorationsRes.data);
+      if (!capSpawnsRes.error && capSpawnsRes.data) setCapSpawns(capSpawnsRes.data);
       if (options?.showLoading) setLoading(false);
     },
     [getSupabase]
@@ -261,6 +270,52 @@ export default function MapPage() {
     });
   };
 
+  const handleCollectCap = useCallback(
+    async (spawn: MapCapSpawn) => {
+      if (collectingCapId) return;
+      if (!footprintMode && !userLocation) return;
+
+      setCollectingCapId(spawn.id);
+      const previousSpawns = capSpawns;
+      const previousBalance = bottleCaps;
+
+      setCapSpawns((prev) => prev.filter((s) => s.id !== spawn.id));
+      setBottleCaps((c) => c + 1);
+      setCapPulse(true);
+      setTimeout(() => setCapPulse(false), 500);
+
+      const supabase = getSupabase();
+      const { data, error } = await supabase.rpc("collect_map_cap_spawn", {
+        p_spawn_id: spawn.id,
+        p_user_lat: userLocation?.lat ?? anchorLocation?.lat ?? spawn.lat,
+        p_user_lng: userLocation?.lng ?? anchorLocation?.lng ?? spawn.lng,
+        p_footprint_mode: footprintMode,
+      });
+
+      setCollectingCapId(null);
+
+      if (error) {
+        setCapSpawns(previousSpawns);
+        setBottleCaps(previousBalance);
+        return;
+      }
+
+      const result = data as { new_balance?: number } | null;
+      if (result?.new_balance != null) {
+        setBottleCaps(result.new_balance);
+      }
+    },
+    [
+      collectingCapId,
+      footprintMode,
+      userLocation,
+      anchorLocation,
+      capSpawns,
+      bottleCaps,
+      getSupabase,
+    ]
+  );
+
   const handleBottleSuccess = (capCost: number, meta?: PlacementSuccessMeta) => {
     setShowShop(false);
     setCastSplash({ show: true, cost: capCost });
@@ -384,6 +439,8 @@ export default function MapPage() {
               bottles={bottles}
               towers={towers}
               decorations={decorations}
+              capSpawns={capSpawns}
+              collectingCapId={collectingCapId}
               currentUserId={userId ?? undefined}
               footprintMode={footprintMode}
               placementMode={!!placementIntent}
@@ -393,6 +450,7 @@ export default function MapPage() {
                 if (tower.owner_id === userId) setSelectedTower(tower);
               }}
               onSelectDecoration={setSelectedDecoration}
+              onCollectCap={(spawn) => void handleCollectCap(spawn)}
               onMapCenterChange={(lat, lng) => {
                 if (placementIntent) setPlacementPin({ lat, lng });
               }}
