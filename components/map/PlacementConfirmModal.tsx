@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { PlacementIntent } from "@/lib/placement";
+import type { PlacementSuccessMeta } from "@/lib/optimisticBottle";
 import { placementKindLabel, placementLabel } from "@/lib/placement";
 import { getDecorationType } from "@/lib/decorationCatalog";
 import MapModal from "@/components/ui/MapModal";
@@ -14,7 +15,7 @@ type Props = {
   anchor: { lat: number; lng: number };
   radiusM: number;
   onBack: () => void;
-  onSuccess: (capCost: number) => void;
+  onSuccess: (capCost: number, meta: PlacementSuccessMeta) => void;
   onClose: () => void;
 };
 
@@ -43,9 +44,10 @@ export default function PlacementConfirmModal({
     const supabase = getSupabase();
 
     let rpcError: { message: string } | null = null;
+    let newBottleId: string | undefined;
 
     if (intent.kind === "bottle") {
-      const { error } = await supabase.rpc("drop_bottle", {
+      const { data, error } = await supabase.rpc("drop_bottle", {
         p_bottle_type_id: intent.bottleTypeId,
         p_lat: placement.lat,
         p_lng: placement.lng,
@@ -56,6 +58,7 @@ export default function PlacementConfirmModal({
         ...anchorParams,
       });
       rpcError = error;
+      if (!error && data) newBottleId = data as string;
     } else if (intent.kind === "tower") {
       const { error } = await supabase.rpc("place_signal_tower", {
         p_lat: placement.lat,
@@ -89,7 +92,7 @@ export default function PlacementConfirmModal({
       return;
     }
 
-    onSuccess(intent.capCost);
+    onSuccess(intent.capCost, { bottleId: newBottleId, intent, placement });
     onClose();
   };
 

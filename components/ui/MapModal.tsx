@@ -30,6 +30,7 @@ type MapModalProps = {
   onClose: () => void;
   title: ReactNode;
   subtitle?: ReactNode;
+  headerLeading?: ReactNode;
   headerBelow?: ReactNode;
   children: ReactNode;
   maxWidth?: keyof typeof maxWidthClass;
@@ -43,6 +44,7 @@ export default function MapModal({
   onClose,
   title,
   subtitle,
+  headerLeading,
   headerBelow,
   children,
   maxWidth = "lg",
@@ -69,9 +71,12 @@ export default function MapModal({
       >
         <div className={headerClass}>
           <div className="flex items-center justify-between gap-3 px-5 py-4">
-            <div className="min-w-0">
-              <h2 className="text-base font-bold text-slate-900">{title}</h2>
-              {subtitle}
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              {headerLeading}
+              <div className="min-w-0">
+                <h2 className="text-base font-bold text-slate-900">{title}</h2>
+                {subtitle}
+              </div>
             </div>
             <MapModalCloseButton onClick={onClose} />
           </div>

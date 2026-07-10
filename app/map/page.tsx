@@ -14,6 +14,7 @@ import type {
 } from "@/lib/types";
 import { FOOTPRINT_RADIUS_M, DEFAULT_BAG_SLOTS } from "@/lib/types";
 import type { PlacementIntent } from "@/lib/placement";
+import { buildOptimisticBottle, type PlacementSuccessMeta } from "@/lib/optimisticBottle";
 import { fetchDiscoveryRadius, shouldReloadMapAtLocation } from "@/lib/discovery";
 import BottleMap from "@/components/map/BottleMap";
 import { getShopBottleTypes } from "@/lib/bottleCatalog";
@@ -244,25 +245,46 @@ export default function MapPage() {
     await reloadMapAtAnchor(anchorLocation.lat, anchorLocation.lng, footprintMode);
   }, [anchorLocation, footprintMode, reloadMapAtAnchor]);
 
-  const handlePurchase = async (capCost: number) => {
+  const handlePurchase = (capCost: number) => {
     setBottleCaps((c) => c - capCost);
     setCapPulse(true);
     setTimeout(() => setCapPulse(false), 500);
-    await loadPlayer();
-    await refreshMapData();
-    if (anchorLocation) {
-      lastGpsReloadRef.current = {
-        lat: anchorLocation.lat,
-        lng: anchorLocation.lng,
-        at: Date.now(),
-      };
-    }
+    void loadPlayer();
+    void refreshMapData().then(() => {
+      if (anchorLocation) {
+        lastGpsReloadRef.current = {
+          lat: anchorLocation.lat,
+          lng: anchorLocation.lng,
+          at: Date.now(),
+        };
+      }
+    });
   };
 
-  const handleBottleSuccess = async (capCost: number) => {
+  const handleBottleSuccess = (capCost: number, meta?: PlacementSuccessMeta) => {
     setShowShop(false);
     setCastSplash({ show: true, cost: capCost });
-    await handlePurchase(capCost);
+
+    if (meta?.intent.kind === "bottle" && meta.bottleId && userId) {
+      const { intent } = meta;
+      const bottleType = bottleTypes.find((t) => t.id === intent.bottleTypeId);
+      if (bottleType) {
+        const optimistic = buildOptimisticBottle(
+          meta.bottleId,
+          intent,
+          meta.placement,
+          bottleType,
+          userId,
+          displayName ?? "Sailor"
+        );
+        setBottles((prev) => {
+          if (prev.some((b) => b.id === meta.bottleId)) return prev;
+          return [...prev, optimistic];
+        });
+      }
+    }
+
+    handlePurchase(capCost);
   };
 
   const dismissCastSplash = useCallback(() => {
@@ -287,18 +309,18 @@ export default function MapPage() {
   }, []);
 
   const handlePlacementSuccess = useCallback(
-    async (capCost: number, intent: PlacementIntent) => {
+    (capCost: number, meta: PlacementSuccessMeta) => {
       setPlacementIntent(null);
       setPlacementPin(null);
       setShowPlacementConfirm(false);
-      if (intent.kind === "bottle") {
-        await handleBottleSuccess(capCost);
+      if (meta.intent.kind === "bottle") {
+        handleBottleSuccess(capCost, meta);
       } else {
-        await handlePurchase(capCost);
+        handlePurchase(capCost);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [bottleTypes, userId, displayName]
   );
 
   const handleFootprintSelect = (fp: Footprint) => {
@@ -480,8 +502,8 @@ export default function MapPage() {
           tower={selectedTower}
           bottleCaps={bottleCaps}
           onClose={() => setSelectedTower(null)}
-          onExtended={async (cost) => {
-            await handlePurchase(cost);
+          onExtended={(cost) => {
+            handlePurchase(cost);
             setSelectedTower(null);
           }}
         />
@@ -502,7 +524,7 @@ export default function MapPage() {
           radiusM={effectiveRadius}
           onBack={() => setShowPlacementConfirm(false)}
           onClose={cancelPlacement}
-          onSuccess={(capCost) => void handlePlacementSuccess(capCost, placementIntent)}
+          onSuccess={(capCost, meta) => handlePlacementSuccess(capCost, meta)}
         />
       )}
 

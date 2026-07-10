@@ -2,7 +2,7 @@ import BottlePageContent from "@/components/bottles/BottlePageContent";
 
 export const dynamic = "force-dynamic";
 
-export default async function BottlePage({
+export default async function BottleModalPage({
   params,
   searchParams,
 }: {
@@ -12,5 +12,9 @@ export default async function BottlePage({
   const { id } = await params;
   const { footprint: footprintId } = await searchParams;
 
-  return <BottlePageContent id={id} footprintId={footprintId} />;
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col">
+      <BottlePageContent id={id} footprintId={footprintId} />
+    </div>
+  );
 }

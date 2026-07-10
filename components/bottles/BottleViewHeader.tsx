@@ -82,6 +82,14 @@ export default function BottleViewHeader({
   const [inBag, setInBag] = useState(alreadyInBag);
   const expired = isExpiredProp || isExpired(expiresAt);
 
+  const returnToMap = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push("/map");
+  };
+
   const handleKeepInBag = async () => {
     setBagLoading(true);
     setBagError(null);
@@ -166,7 +174,10 @@ export default function BottleViewHeader({
           message="Return to map?"
           confirmLabel="Leave"
           onCancel={() => setShowExitConfirm(false)}
-          onConfirm={() => router.push("/map")}
+          onConfirm={() => {
+            setShowExitConfirm(false);
+            returnToMap();
+          }}
         />
       )}
 
