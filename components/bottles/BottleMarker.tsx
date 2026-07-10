@@ -64,20 +64,19 @@ export default function BottleMarker({ bottle, onClick, isSelected = false, zInd
 
         <motion.div
           className="relative"
-          initial={{ y: 0, scale: 1 }}
+          initial={{ y: 0 }}
           animate={
             isSelected
-              ? { y: -14, scale: 1.1 }
-              : { y: [0, -6, 0], scale: 1 }
+              ? { y: -14 }
+              : { y: [0, -6, 0] }
           }
           transition={
             isSelected
               ? { type: "spring", stiffness: 400, damping: 25 }
               : floatTransition
           }
-          whileTap={{ scale: 0.9 }}
         >
-          <BottleImage size="map" className="transition-transform group-hover:scale-110" />
+          <BottleImage size="map" />
         </motion.div>
 
         <motion.div

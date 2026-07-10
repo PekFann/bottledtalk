@@ -75,7 +75,6 @@ export default function BottleViewHeader({
 }: Props) {
   const router = useRouter();
   const getSupabase = useCallback(() => createClient(), []);
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showBagConfirm, setShowBagConfirm] = useState(false);
   const [bagLoading, setBagLoading] = useState(false);
   const [bagError, setBagError] = useState<string | null>(null);
@@ -156,7 +155,7 @@ export default function BottleViewHeader({
 
           <button
             type="button"
-            onClick={() => setShowExitConfirm(true)}
+            onClick={returnToMap}
             className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
             aria-label="Return to map"
           >
@@ -167,18 +166,6 @@ export default function BottleViewHeader({
 
       {bagError && (
         <p className="px-4 py-2 text-sm text-red-600 bg-red-50 shrink-0">{bagError}</p>
-      )}
-
-      {showExitConfirm && (
-        <ConfirmDialog
-          message="Return to map?"
-          confirmLabel="Leave"
-          onCancel={() => setShowExitConfirm(false)}
-          onConfirm={() => {
-            setShowExitConfirm(false);
-            returnToMap();
-          }}
-        />
       )}
 
       {showBagConfirm && (
