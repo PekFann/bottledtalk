@@ -134,16 +134,20 @@ export default function MapPage() {
           radius_m: radius,
         }),
         supabase.rpc("nearby_map_cap_spawns", {
-          lat,
-          lng,
-          radius_m: radius,
+          p_lat: lat,
+          p_lng: lng,
+          p_radius_m: radius,
         }),
       ]);
 
       if (!bottlesRes.error && bottlesRes.data) setBottles(bottlesRes.data);
       if (!towersRes.error && towersRes.data) setTowers(towersRes.data);
       if (!decorationsRes.error && decorationsRes.data) setDecorations(decorationsRes.data);
-      if (!capSpawnsRes.error && capSpawnsRes.data) setCapSpawns(capSpawnsRes.data);
+      if (capSpawnsRes.error) {
+        console.warn("nearby_map_cap_spawns failed:", capSpawnsRes.error.message);
+      } else if (capSpawnsRes.data) {
+        setCapSpawns(capSpawnsRes.data);
+      }
       if (options?.showLoading) setLoading(false);
     },
     [getSupabase]

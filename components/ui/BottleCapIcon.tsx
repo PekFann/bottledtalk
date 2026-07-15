@@ -4,12 +4,14 @@ const SIZES = {
   sm: "h-3.5 w-3.5",
   md: "h-4 w-4",
   lg: "h-5 w-5",
+  xl: "h-8 w-8",
 } as const;
 
 const PIXEL_SIZES = {
   sm: 14,
   md: 16,
   lg: 20,
+  xl: 32,
 } as const;
 
 type Props = {

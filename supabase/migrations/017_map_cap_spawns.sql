@@ -103,9 +103,9 @@ end;
 $$;
 
 create or replace function public.nearby_map_cap_spawns(
-  lat double precision,
-  lng double precision,
-  radius_m double precision default null
+  p_lat double precision,
+  p_lng double precision,
+  p_radius_m double precision default null
 )
 returns table (
   id uuid,
@@ -133,12 +133,12 @@ begin
     raise exception 'Not authenticated';
   end if;
 
-  effective_radius := coalesce(radius_m, public.get_discovery_radius(lat, lng));
+  effective_radius := coalesce(p_radius_m, public.get_discovery_radius(p_lat, p_lng));
 
-  lat_min := lat - (effective_radius / 111000.0);
-  lat_max := lat + (effective_radius / 111000.0);
-  lng_min := lng - (effective_radius / (111000.0 * greatest(cos(radians(lat)), 0.1)));
-  lng_max := lng + (effective_radius / (111000.0 * greatest(cos(radians(lat)), 0.1)));
+  lat_min := p_lat - (effective_radius / 111000.0);
+  lat_max := p_lat + (effective_radius / 111000.0);
+  lng_min := p_lng - (effective_radius / (111000.0 * greatest(cos(radians(p_lat)), 0.1)));
+  lng_max := p_lng + (effective_radius / (111000.0 * greatest(cos(radians(p_lat)), 0.1)));
 
   grid_lat := floor(lat_min / cell_size) * cell_size;
   while grid_lat <= lat_max loop
@@ -160,7 +160,7 @@ begin
   where s.spawn_date = today
     and st_dwithin(
       s.location,
-      st_setsrid(st_makepoint(lng, lat), 4326)::extensions.geography,
+      st_setsrid(st_makepoint(p_lng, p_lat), 4326)::extensions.geography,
       effective_radius
     )
     and not exists (

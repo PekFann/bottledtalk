@@ -41,10 +41,10 @@ export default function CapSpawnMarker({ spawn, onClick, zIndex = 0, disabled = 
             ease: "easeInOut",
           }}
         >
-          <BottleCapIcon size="md" />
+          <BottleCapIcon size="xl" />
         </motion.div>
         <div
-          className="mt-0.5 h-2 w-6 rounded-[50%] bg-black/35 blur-[1px]"
+          className="mt-0.5 h-2.5 w-8 rounded-[50%] bg-black/35 blur-[1px]"
           aria-hidden
         />
       </button>
