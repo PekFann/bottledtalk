@@ -66,6 +66,7 @@ export default function MapPage() {
     show: false,
     cost: 0,
   });
+  const [capCollectError, setCapCollectError] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarBgColor, setAvatarBgColor] = useState<string | null>(null);
@@ -277,7 +278,7 @@ export default function MapPage() {
   const handleCollectCap = useCallback(
     async (spawn: MapCapSpawn) => {
       if (collectingCapId) return;
-      if (!footprintMode && !userLocation) return;
+      if (!anchorLocation) return;
 
       setCollectingCapId(spawn.id);
       const previousSpawns = capSpawns;
@@ -291,16 +292,19 @@ export default function MapPage() {
       const supabase = getSupabase();
       const { data, error } = await supabase.rpc("collect_map_cap_spawn", {
         p_spawn_id: spawn.id,
-        p_user_lat: userLocation?.lat ?? anchorLocation?.lat ?? spawn.lat,
-        p_user_lng: userLocation?.lng ?? anchorLocation?.lng ?? spawn.lng,
-        p_footprint_mode: footprintMode,
+        p_anchor_lat: anchorLocation.lat,
+        p_anchor_lng: anchorLocation.lng,
+        p_radius_m: effectiveRadius,
       });
 
       setCollectingCapId(null);
 
       if (error) {
+        console.warn("collect_map_cap_spawn failed:", error.message);
         setCapSpawns(previousSpawns);
         setBottleCaps(previousBalance);
+        setCapCollectError("Couldn\u2019t collect cap");
+        setTimeout(() => setCapCollectError(null), 3000);
         return;
       }
 
@@ -311,9 +315,8 @@ export default function MapPage() {
     },
     [
       collectingCapId,
-      footprintMode,
-      userLocation,
       anchorLocation,
+      effectiveRadius,
       capSpawns,
       bottleCaps,
       getSupabase,
@@ -472,6 +475,12 @@ export default function MapPage() {
               onCancel={cancelPlacement}
               onConfirm={() => setShowPlacementConfirm(true)}
             />
+          )}
+
+          {capCollectError && (
+            <div className="absolute top-28 left-1/2 -translate-x-1/2 z-30 rounded-full bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700 shadow">
+              {capCollectError}
+            </div>
           )}
 
           {loading && bottles.length === 0 && (
