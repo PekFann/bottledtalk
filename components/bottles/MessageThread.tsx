@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Footprints } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Message } from "@/lib/types";
+import LetterPhoto from "@/components/bottles/LetterPhoto";
 
 type Props = {
   bottleId: string;
@@ -119,6 +120,9 @@ export default function MessageThread({
                 {new Date(msg.created_at).toLocaleString()}
               </span>
             </p>
+            {msg.image_path && (
+              <LetterPhoto imagePath={msg.image_path} tiltId={msg.id} />
+            )}
           </article>
         ))}
         <div ref={bottomRef} />

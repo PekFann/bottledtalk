@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { BagMessageSnapshot } from "@/lib/types";
 import BagViewHeader from "@/components/bag/BagViewHeader";
+import LetterPhoto from "@/components/bottles/LetterPhoto";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,12 @@ export default async function BagItemPage({
                     {new Date(msg.created_at).toLocaleString()}
                   </span>
                 </p>
+                {msg.image_path && (
+                  <LetterPhoto
+                    imagePath={msg.image_path}
+                    tiltId={`${item.id}-${i}-${msg.created_at}`}
+                  />
+                )}
               </article>
             ))
           )}

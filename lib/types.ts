@@ -58,6 +58,7 @@ export type Message = {
   body: string;
   created_at: string;
   is_remote?: boolean;
+  image_path?: string | null;
   author?: Profile;
 };
 
@@ -98,6 +99,7 @@ export type BagMessageSnapshot = {
   author_name: string;
   body: string;
   created_at: string;
+  image_path?: string | null;
 };
 
 export type BagItem = {
@@ -148,6 +150,7 @@ export type SignalTower = {
   expires_at: string;
   created_at: string;
   owner_name: string;
+  name: string;
 };
 
 export type MapDecoration = {

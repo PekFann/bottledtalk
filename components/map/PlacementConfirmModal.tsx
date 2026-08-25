@@ -6,6 +6,10 @@ import type { PlacementIntent } from "@/lib/placement";
 import type { PlacementSuccessMeta } from "@/lib/optimisticBottle";
 import { placementKindLabel, placementLabel } from "@/lib/placement";
 import { getDecorationType } from "@/lib/decorationCatalog";
+import {
+  friendlyDropBottleError,
+  uploadPendingBottleImage,
+} from "@/lib/bottleImage";
 import MapModal from "@/components/ui/MapModal";
 import CapAmount from "@/components/ui/CapAmount";
 
@@ -30,6 +34,7 @@ export default function PlacementConfirmModal({
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<"photo" | "place" | null>(null);
   const getSupabase = useCallback(() => createClient(), []);
 
   const anchorParams = {
@@ -41,13 +46,26 @@ export default function PlacementConfirmModal({
   const handleConfirm = async () => {
     setSubmitting(true);
     setError(null);
+    setErrorKind(null);
     const supabase = getSupabase();
 
     let rpcError: { message: string } | null = null;
     let newBottleId: string | undefined;
 
     if (intent.kind === "bottle") {
-      const { data, error } = await supabase.rpc("drop_bottle", {
+      let imagePath: string | null = null;
+      if (intent.imageFile) {
+        try {
+          imagePath = await uploadPendingBottleImage(intent.imageFile);
+        } catch (err) {
+          setSubmitting(false);
+          setErrorKind("photo");
+          setError(err instanceof Error ? err.message : "Couldn’t upload photo");
+          return;
+        }
+      }
+
+      const { data, error: placeError } = await supabase.rpc("drop_bottle", {
         p_bottle_type_id: intent.bottleTypeId,
         p_lat: placement.lat,
         p_lng: placement.lng,
@@ -55,27 +73,30 @@ export default function PlacementConfirmModal({
         p_message: intent.message,
         p_description: intent.description,
         p_pin: intent.pin,
+        p_image_path: imagePath,
         ...anchorParams,
       });
-      rpcError = error;
-      if (!error && data) newBottleId = data as string;
+      rpcError = placeError
+        ? { message: friendlyDropBottleError(placeError.message) }
+        : null;
+      if (!placeError && data) newBottleId = data as string;
     } else if (intent.kind === "tower") {
-      const { error } = await supabase.rpc("place_signal_tower", {
+      const { error: placeError } = await supabase.rpc("place_signal_tower", {
         p_lat: placement.lat,
         p_lng: placement.lng,
         ...anchorParams,
       });
-      rpcError = error;
+      rpcError = placeError;
     } else if (intent.kind === "footprint") {
-      const { error } = await supabase.rpc("create_footprint", {
+      const { error: placeError } = await supabase.rpc("create_footprint", {
         p_name: intent.name,
         p_lat: placement.lat,
         p_lng: placement.lng,
         ...anchorParams,
       });
-      rpcError = error;
+      rpcError = placeError;
     } else {
-      const { error } = await supabase.rpc("place_decoration", {
+      const { error: placeError } = await supabase.rpc("place_decoration", {
         p_title: intent.title,
         p_description: intent.description,
         p_decoration_type: intent.decorationTypeId,
@@ -83,11 +104,12 @@ export default function PlacementConfirmModal({
         p_lng: placement.lng,
         ...anchorParams,
       });
-      rpcError = error;
+      rpcError = placeError;
     }
 
     setSubmitting(false);
     if (rpcError) {
+      setErrorKind("place");
       setError(rpcError.message);
       return;
     }
@@ -116,6 +138,11 @@ export default function PlacementConfirmModal({
           <span className="font-medium text-slate-900">Location:</span>{" "}
           {placement.lat.toFixed(5)}, {placement.lng.toFixed(5)}
         </p>
+        {intent.kind === "bottle" && intent.imageFile && (
+          <p>
+            <span className="font-medium text-slate-900">Photo:</span> Attached
+          </p>
+        )}
         {intent.kind === "decoration" && (() => {
           const decorationType = getDecorationType(intent.decorationTypeId);
           return (
@@ -138,7 +165,14 @@ export default function PlacementConfirmModal({
         })()}
       </div>
 
-      {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
+      {error && (
+        <div className="mt-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 text-sm text-red-700">
+          <p className="font-medium text-red-800">
+            {errorKind === "photo" ? "Photo upload failed" : "Couldn’t place on map"}
+          </p>
+          <p className="mt-0.5">{error}</p>
+        </div>
+      )}
 
       <div className="flex gap-2 mt-4">
         <button
@@ -156,7 +190,7 @@ export default function PlacementConfirmModal({
           className="flex-1 btn-primary-block py-2.5 text-sm disabled:opacity-50"
         >
           {submitting ? (
-            "Placing…"
+            intent.kind === "bottle" && intent.imageFile ? "Uploading photo…" : "Placing…"
           ) : (
             <>
               Place (<CapAmount amount={intent.capCost} prefix="−" />)

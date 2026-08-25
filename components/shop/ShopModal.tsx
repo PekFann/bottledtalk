@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Radio, Footprints, ChevronLeft, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Radio, Footprints, ChevronLeft, Sparkles, ImagePlus, X } from "lucide-react";
 import MapModal from "@/components/ui/MapModal";
 import CapAmount from "@/components/ui/CapAmount";
 import BottleCapIcon from "@/components/ui/BottleCapIcon";
@@ -24,6 +24,10 @@ import {
 } from "@/lib/decorationCatalog";
 import PinInput from "@/components/ui/PinInput";
 import BottleImage from "@/components/bottles/BottleImage";
+import {
+  BOTTLE_IMAGE_ACCEPT,
+  validateBottleImageFile,
+} from "@/lib/bottleImage";
 
 type Tab = "bottles" | "tower" | "footprint" | "decoration";
 
@@ -54,11 +58,14 @@ export default function ShopModal({
   const [description, setDescription] = useState("");
   const [pin, setPin] = useState("");
   const [message, setMessage] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [footprintName, setFootprintName] = useState("");
   const [selectedDecorationTypeId, setSelectedDecorationTypeId] = useState("");
   const [decorationTitle, setDecorationTitle] = useState("");
   const [decorationDescription, setDecorationDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const selectedType = shopBottleTypes.find((t) => t.id === selectedTypeId);
   const selectedDecorationType = getDecorationType(selectedDecorationTypeId);
@@ -72,7 +79,36 @@ export default function ShopModal({
     setDescription("");
     setPin("");
     setMessage("");
+    setImageFile(null);
+    setImageError(null);
     setError(null);
+  };
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(imageFile);
+    setImagePreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imageFile]);
+
+  const onPickImage = (file: File | null) => {
+    if (!file) {
+      setImageFile(null);
+      setImageError(null);
+      return;
+    }
+    const err = validateBottleImageFile(file);
+    if (err) {
+      setImageFile(null);
+      setImageError(err);
+      return;
+    }
+    setImageError(null);
+    setError(null);
+    setImageFile(file);
   };
 
   const goBackToBottlePicker = () => {
@@ -110,6 +146,7 @@ export default function ShopModal({
       pin: isSealed ? pin : null,
       capCost: bottleCost,
       isSealed,
+      imageFile,
     });
   };
 
@@ -261,6 +298,49 @@ export default function ShopModal({
                 <div>
                   <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1.5">Title</label>
                   <input id="title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} required className={fieldClassName} placeholder="A note for whoever finds this…" />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Photo <span className="font-normal text-slate-500">(optional)</span>
+                  </label>
+                  {imagePreviewUrl ? (
+                    <div className="relative inline-block">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={imagePreviewUrl}
+                        alt="Selected photo preview"
+                        className="h-28 w-28 rounded-lg object-cover border border-slate-200 shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => onPickImage(null)}
+                        className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white border border-slate-200 text-slate-600 shadow"
+                        aria-label="Remove photo"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-sky-300 bg-sky-50/60 px-4 py-3.5 text-sm text-slate-700 hover:border-sky-400 hover:bg-sky-50">
+                      <ImagePlus className="h-5 w-5 text-sky-600 shrink-0" />
+                      <span className="font-medium">Add a photo to your letter</span>
+                      <input
+                        type="file"
+                        accept={BOTTLE_IMAGE_ACCEPT}
+                        className="sr-only"
+                        onChange={(e) => {
+                          onPickImage(e.target.files?.[0] ?? null);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  )}
+                  {imageError && (
+                    <p className="mt-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+                      {imageError}
+                    </p>
+                  )}
                 </div>
 
                 {isSealed && (

@@ -11,6 +11,7 @@ export type PlacementIntent =
       pin: string | null;
       capCost: number;
       isSealed: boolean;
+      imageFile?: File | null;
     }
   | { kind: "tower"; capCost: number }
   | { kind: "footprint"; name: string; capCost: number }
